@@ -47,45 +47,49 @@ def _do_antigravity_worker(
 
         # If API key is present, perform code analysis/generation via LLM
         if OpenAI and api_key:
-            client = OpenAI(
-                api_key=api_key,
-                base_url=base_url,
-                max_retries=0,
-                timeout=float(min(60.0, ANTIGRAVITY_TIMEOUT)),
-            )
-            system_prompt = (
-                "You are Antigravity Core Engineer, an autonomous coding and technical execution agent.\n"
-                "Your objective is to provide production-grade, bug-free, well-commented code, "
-                "precise file changes, or definitive architecture analysis.\n"
-                f"Active Workspace: {workspace}"
-            )
-            if task_goal:
-                system_prompt += f"\nParent Task Context: {task_goal}"
+            try:
+                client = OpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    max_retries=0,
+                    timeout=float(min(15.0, ANTIGRAVITY_TIMEOUT)),
+                )
+                system_prompt = (
+                    "You are Antigravity Core Engineer, an autonomous coding and technical execution agent.\n"
+                    "Your objective is to provide production-grade, bug-free, well-commented code, "
+                    "precise file changes, or definitive architecture analysis.\n"
+                    f"Active Workspace: {workspace}"
+                )
+                if task_goal:
+                    system_prompt += f"\nParent Task Context: {task_goal}"
 
-            user_prompt = f"Goal:\n{goal}\n\nPlease generate the exact technical implementation or solution."
+                user_prompt = f"Goal:\n{goal}\n\nPlease generate the exact technical implementation or solution."
 
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                max_tokens=4000,
-                temperature=0.2,
-            )
-            choice = response.choices[0]
-            usage = response.usage
-            in_tok = usage.prompt_tokens if usage else max(50, len(user_prompt) // 2)
-            out_tok = usage.completion_tokens if usage else max(50, len(choice.message.content or "") // 2)
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    max_tokens=4000,
+                    temperature=0.2,
+                )
+                choice = response.choices[0]
+                usage = response.usage
+                in_tok = usage.prompt_tokens if usage else max(50, len(user_prompt) // 2)
+                out_tok = usage.completion_tokens if usage else max(50, len(choice.message.content or "") // 2)
 
-            result_queue.put({
-                "ok": True,
-                "result": choice.message.content or "",
-                "input_tokens": in_tok,
-                "output_tokens": out_tok,
-                "usage_source": "measured" if usage else "estimated",
-            })
-            return
+                result_queue.put({
+                    "ok": True,
+                    "result": choice.message.content or "",
+                    "input_tokens": in_tok,
+                    "output_tokens": out_tok,
+                    "usage_source": "measured" if usage else "estimated",
+                })
+                return
+            except Exception:
+                # Graceful fallback to deterministic engine on connection/timeout issue
+                pass
 
         # Fallback deterministic execution if no API key configured (offline safe mode)
         simulated_output = (

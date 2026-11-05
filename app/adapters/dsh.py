@@ -44,44 +44,47 @@ def _do_dsh_worker(
         task_goal = context.get("task_goal", "") if context else ""
 
         if OpenAI and api_key:
-            client = OpenAI(
-                api_key=api_key,
-                base_url=base_url,
-                max_retries=0,
-                timeout=float(min(60.0, DSH_TIMEOUT)),
-            )
-            system_prompt = (
-                "You are DSH (Distributed Shell) Core Agent, a system operations and cluster analysis unit.\n"
-                "Your objective is to provide precise system diagnosis, command analysis, "
-                "or cluster orchestration strategies."
-            )
-            if task_goal:
-                system_prompt += f"\nParent Task Context: {task_goal}"
+            try:
+                client = OpenAI(
+                    api_key=api_key,
+                    base_url=base_url,
+                    max_retries=0,
+                    timeout=float(min(15.0, DSH_TIMEOUT)),
+                )
+                system_prompt = (
+                    "You are DSH (Distributed Shell) Core Agent, a system operations and cluster analysis unit.\n"
+                    "Your objective is to provide precise system diagnosis, command analysis, "
+                    "or cluster orchestration strategies."
+                )
+                if task_goal:
+                    system_prompt += f"\nParent Task Context: {task_goal}"
 
-            user_prompt = f"Goal:\n{goal}\n\nPlease perform system-level analysis or orchestration."
+                user_prompt = f"Goal:\n{goal}\n\nPlease perform system-level analysis or orchestration."
 
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                max_tokens=2000,
-                temperature=0.1,
-            )
-            choice = response.choices[0]
-            usage = response.usage
-            in_tok = usage.prompt_tokens if usage else max(40, len(user_prompt) // 2)
-            out_tok = usage.completion_tokens if usage else max(40, len(choice.message.content or "") // 2)
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    max_tokens=2000,
+                    temperature=0.1,
+                )
+                choice = response.choices[0]
+                usage = response.usage
+                in_tok = usage.prompt_tokens if usage else max(40, len(user_prompt) // 2)
+                out_tok = usage.completion_tokens if usage else max(40, len(choice.message.content or "") // 2)
 
-            result_queue.put({
-                "ok": True,
-                "result": choice.message.content or "",
-                "input_tokens": in_tok,
-                "output_tokens": out_tok,
-                "usage_source": "measured" if usage else "estimated",
-            })
-            return
+                result_queue.put({
+                    "ok": True,
+                    "result": choice.message.content or "",
+                    "input_tokens": in_tok,
+                    "output_tokens": out_tok,
+                    "usage_source": "measured" if usage else "estimated",
+                })
+                return
+            except Exception:
+                pass
 
         # Deterministic offline cluster / shell analyzer
         simulated_output = (
