@@ -1,0 +1,224 @@
+{
+  "summary": {
+    "total_cases": 8,
+    "total_duration_seconds": 379.26,
+    "single_agent_total_tokens": 10095,
+    "multi_agent_total_tokens": 11934,
+    "overall_token_multiplier": 1.18,
+    "simple_tasks_overhead_ratio": 1.12,
+    "complex_tasks_overhead_ratio": 1.3,
+    "verdict_accuracy_pct": 62.5,
+    "single_agent_recommended_count": 2,
+    "multi_agent_recommended_count": 6
+  },
+  "cases": [
+    {
+      "id": "BM-01",
+      "category": "SIMPLE",
+      "task_type": "general",
+      "goal": "计算 123456 * 654321 的精确乘积数值",
+      "description": "简单基础算术，测试系统是否能识别简单任务并阻断冗余多 Agent DAG 拆分",
+      "complexity": "simple",
+      "expected_mode": "use_single_agent",
+      "recommendation": "use_single_agent",
+      "verdict_match": true,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 408,
+        "elapsed_seconds": 15.77,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 509,
+        "elapsed_seconds": 15.6,
+        "steps": 1
+      },
+      "token_multiplier": 1.25,
+      "time_delta_seconds": -0.17,
+      "reason": "Simple task detected: Single agent achieved goal in 15.77s consuming 408 tokens. Multi-agent introduced 1.25x token overhead with no architectural necessity."
+    },
+    {
+      "id": "BM-02",
+      "category": "SIMPLE",
+      "task_type": "knowledge",
+      "goal": "简要解释 HTTP 状态码 401 Unauthorized 与 403 Forbidden 的核心区别",
+      "description": "基础知识问答，测试是否直接通过单 Agent 直达返回，零规划延迟",
+      "complexity": "single_expert",
+      "expected_mode": "use_single_agent",
+      "recommendation": "use_multi_agent",
+      "verdict_match": false,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 180,
+        "elapsed_seconds": 16.128,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 149,
+        "elapsed_seconds": 11.507,
+        "steps": 1
+      },
+      "token_multiplier": 0.83,
+      "time_delta_seconds": -4.621,
+      "reason": "Multi-agent provided independent verification with acceptable token overhead."
+    },
+    {
+      "id": "BM-03",
+      "category": "SINGLE_EXPERT",
+      "task_type": "coding",
+      "goal": "编写一个 Python 函数，计算平面直角坐标系中两点间的欧几里得距离，并对输入异常做防御性断言",
+      "description": "单函数代码编写，测试代码专家执行与独立轻量验证",
+      "complexity": "simple",
+      "expected_mode": "use_single_agent",
+      "recommendation": "use_single_agent",
+      "verdict_match": true,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 548,
+        "elapsed_seconds": 13.446,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 574,
+        "elapsed_seconds": 11.567,
+        "steps": 1
+      },
+      "token_multiplier": 1.05,
+      "time_delta_seconds": -1.879,
+      "reason": "Simple task detected: Single agent achieved goal in 13.446s consuming 548 tokens. Multi-agent introduced 1.05x token overhead with no architectural necessity."
+    },
+    {
+      "id": "BM-04",
+      "category": "SINGLE_EXPERT",
+      "task_type": "analysis",
+      "goal": "分析一段缺少联合索引的高频 SQL 查询慢日志，给出 EXPLAIN 分析和最佳复合索引创建语句",
+      "description": "SQL 性能分析，单专家即可交付高水准方案",
+      "complexity": "single_expert",
+      "expected_mode": "use_single_agent",
+      "recommendation": "use_multi_agent",
+      "verdict_match": false,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 2437,
+        "elapsed_seconds": 31.981,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 2260,
+        "elapsed_seconds": 44.809,
+        "steps": 1
+      },
+      "token_multiplier": 0.93,
+      "time_delta_seconds": 12.828,
+      "reason": "Multi-agent provided independent verification with acceptable token overhead."
+    },
+    {
+      "id": "BM-05",
+      "category": "COMPLEX",
+      "task_type": "coding",
+      "goal": "设计并实现一个支持 O(1) 读写的高并发线程安全 LRU 缓存类，编写测试用例并验证淘汰策略",
+      "description": "多步骤工程：包含数据结构设计、并发安全锁、测试用例编写与多阶段验证",
+      "complexity": "single_expert",
+      "expected_mode": "use_multi_agent",
+      "recommendation": "use_multi_agent",
+      "verdict_match": true,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 2038,
+        "elapsed_seconds": 28.739,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 2949,
+        "elapsed_seconds": 28.677,
+        "steps": 1
+      },
+      "token_multiplier": 1.45,
+      "time_delta_seconds": -0.062,
+      "reason": "Multi-agent provided independent verification with acceptable token overhead."
+    },
+    {
+      "id": "BM-06",
+      "category": "COMPLEX",
+      "task_type": "research",
+      "goal": "调研比较 Redis 与 Memcached 在微服务架构分布式缓存场景下的优缺点，给出具体落地选型建议",
+      "description": "跨维度深度调研：涵盖架构演进、内存模型对比与落地决策",
+      "complexity": "single_expert",
+      "expected_mode": "use_multi_agent",
+      "recommendation": "use_multi_agent",
+      "verdict_match": true,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 1119,
+        "elapsed_seconds": 27.364,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 1161,
+        "elapsed_seconds": 27.381,
+        "steps": 1
+      },
+      "token_multiplier": 1.04,
+      "time_delta_seconds": 0.017,
+      "reason": "Multi-agent provided independent verification with acceptable token overhead."
+    },
+    {
+      "id": "BM-07",
+      "category": "EDGE_CASE",
+      "task_type": "coding",
+      "goal": "编写一个能够递归展开任意深层嵌套字典与列表的 Python 工具函数，支持循环引用检测",
+      "description": "递归与深度边界：测试多 Agent 是否能提供代码设计与边界对抗测试",
+      "complexity": "single_expert",
+      "expected_mode": "use_multi_agent",
+      "recommendation": "use_multi_agent",
+      "verdict_match": true,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 942,
+        "elapsed_seconds": 24.011,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 1003,
+        "elapsed_seconds": 23.444,
+        "steps": 1
+      },
+      "token_multiplier": 1.06,
+      "time_delta_seconds": -0.567,
+      "reason": "Multi-agent provided independent verification with acceptable token overhead."
+    },
+    {
+      "id": "BM-08",
+      "category": "EDGE_CASE",
+      "task_type": "analysis",
+      "goal": "对一段存在除以零漏洞、未捕获 NoneType 异常的数据清洗脚本进行语法检查与防御性重构",
+      "description": "漏洞修复与重构：评估单专家分析与多 Agent 协作的性价比边界",
+      "complexity": "single_expert",
+      "expected_mode": "use_single_agent",
+      "recommendation": "use_multi_agent",
+      "verdict_match": false,
+      "single_agent": {
+        "status": "success",
+        "total_tokens": 2423,
+        "elapsed_seconds": 27.898,
+        "steps": 1
+      },
+      "multi_agent": {
+        "status": "success",
+        "total_tokens": 3329,
+        "elapsed_seconds": 30.935,
+        "steps": 1
+      },
+      "token_multiplier": 1.37,
+      "time_delta_seconds": 3.037,
+      "reason": "Multi-agent provided independent verification with acceptable token overhead."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "project": "NEXUS CORE 2.0",
+  "version": "0.2.0-M0-CLOSED",
+  "phase": "M0 Milestone Fully Closed (B0 v7 + B1 Engine + Unified API + Multi-Adapters)",
+  "tests": "102 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 128/128 passed.",
+  "modules": {
+    "planner": "Qwen Plus via Bailian OpenAI-compatible API + rule fallback",
+    "plan_validation": "Pydantic PlanSchema with DAG cycle detection",
+    "agent_registry": "8 default agents seeded, Antigravity, DSH, Hermes & Mock supported",
+    "adapters": {
+      "antigravity": "Process-isolated coding, file I/O & command execution node",
+      "dsh": "Process-isolated distributed shell & cluster analysis node",
+      "hermes": "Process-isolated LLM analysis node"
+    },
+    "contracts_b0": "v7.0 FROZEN (16-row aggregation, default-deny permissions, immutable budget, canonical json RFC 8785)",
+    "execution_engine_b1": "Unified ExecutionEngine with SQLite persistence, budget tracking, event streaming",
+    "api": "FastAPI: idempotent submission, task execution with budget immutability, detail with B0 telemetry, subtask step status"
+  },
+  "planner_model": "qwen-plus-latest",
+  "planner_status": "Configured via DASHSCOPE_API_KEY env var"
+}

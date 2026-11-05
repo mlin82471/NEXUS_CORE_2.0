@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS CORE 2.0 — Production Dashboard (React + TypeScript)</title>
+  <link rel="icon" type="image/svg+xml" href="/dashboard/public/favicon.svg">
+  <link rel="stylesheet" href="/dashboard/src/index.css">
+  <script>
+    // Global defensive error boundary to prevent silent white screen
+    window.addEventListener('error', function(e) {
+      var root = document.getElementById('root');
+      if (root) {
+        root.innerHTML = '<div style="max-width:600px;margin:60px auto;padding:24px;color:#d70015;background:#fff2f2;border:1px solid #ffd0d0;border-radius:14px;font-family:-apple-system,sans-serif;">' +
+          '<h3 style="margin-top:0;font-size:16px;">⚠️ 仪表盘加载遇到异常</h3>' +
+          '<p style="font-size:13px;line-height:1.5;">' + (e.message || '未知脚本错误') + '</p>' +
+          '<p style="font-size:11px;color:#86868b;">来源: ' + (e.filename || '') + ' (行 ' + (e.lineno || 0) + ')</p>' +
+          '<button onclick="location.reload()" style="margin-top:10px;padding:6px 14px;border:none;background:#0071e3;color:#fff;border-radius:8px;cursor:pointer;font-size:12px;">重试刷新</button>' +
+          '</div>';
+      }
+    });
+  </script>
+  <!-- Local Offline React 18 & ReactDOM (Zero external CDN latency / blocking) -->
+  <script src="/dashboard/public/react.production.min.js"></script>
+  <script src="/dashboard/public/react-dom.production.min.js"></script>
+</head>
+<body>
+  <div id="root">
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #86868b; font-size: 13px;">
+      <span class="spinner"></span> 正在初始化 NEXUS CORE 2.0 仪表盘...
+    </div>
+  </div>
+  <!-- Pre-compiled Standalone Bundle -->
+  <script src="/dashboard/public/bundle.js"></script>
+</body>
+</html>

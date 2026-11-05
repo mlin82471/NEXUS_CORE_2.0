@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  nexus-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-core-2.0
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=false
+      - DATABASE_URL=postgresql://nexus_user:nexus_password@postgres:5432/nexus_core_db
+      - PLANNER_BASE_URL=http://host.docker.internal:8045/v1
+      - PLANNER_MODEL=gemini-3.8-flash-medium
+      - SWEEPER_ENABLED=true
+      - SWEEPER_INTERVAL_SECONDS=300
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - nexus-data:/root/.nexus-core-2.0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: nexus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nexus_core_db
+      POSTGRES_USER: nexus_user
+      POSTGRES_PASSWORD: nexus_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus_user -d nexus_core_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  nexus-data:
+  pg-data:

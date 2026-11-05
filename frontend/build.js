@@ -1,0 +1,51 @@
+const fs = require('fs');
+const path = require('path');
+
+const srcDir = path.join(__dirname, 'src');
+const files = [
+  'components/DAGTopology.tsx',
+  'components/DAGStudio.tsx',
+  'components/TaskWorkspace.tsx',
+  'components/BenchmarkCenter.tsx',
+  'components/EvolutionPanel.tsx',
+  'components/MemoryInspector.tsx',
+  'components/AgentMatrix.tsx',
+  'App.tsx'
+];
+
+let fullCode = 'const { useState, useEffect, useRef } = React;\n';
+
+files.forEach(f => {
+  let content = fs.readFileSync(path.join(srcDir, f), 'utf8');
+  // Remove import lines (single line and multi-line)
+  content = content.replace(/import\s+[\s\S]*?from\s+['"].*?['"];?/g, '');
+  // Remove export default statements
+  content = content.replace(/^export\s+default\s+.*?;/gm, '');
+  // Remove export const / export type
+  content = content.replace(/^export\s+(const|type|interface)\s+/gm, '$1 ');
+  fullCode += '\n// ===== ' + f + ' =====\n' + content + '\n';
+});
+
+fullCode += `
+// Mount React root
+const container = document.getElementById('root');
+if (container) {
+  const root = ReactDOM.createRoot(container);
+  root.render(React.createElement(App, null));
+}
+`;
+
+const m = { exports: {} };
+const fn = new Function('module', 'exports', fs.readFileSync(path.join(__dirname, 'public', 'babel.min.js'), 'utf8'));
+fn(m, m.exports);
+const Babel = m.exports;
+
+console.log('Transpiling React + TypeScript components into bundle.js...');
+const res = Babel.transform(fullCode, {
+  filename: 'bundle.tsx',
+  presets: ['react', 'typescript']
+});
+
+const outPath = path.join(__dirname, 'public', 'bundle.js');
+fs.writeFileSync(outPath, res.code, 'utf8');
+console.log('Build completed! Wrote bundle.js:', res.code.length, 'bytes');
