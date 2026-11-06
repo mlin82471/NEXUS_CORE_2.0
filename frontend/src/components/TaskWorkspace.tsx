@@ -164,28 +164,92 @@ export const TaskWorkspace: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {currentTask ? (
           <>
-            {/* Task Meta Header */}
-            <div style={{ background: '#fff', borderRadius: '16px', padding: '18px 24px', border: '1px solid rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Lead Coordinator Agent Banner */}
+            <div className="apple-card" style={{
+              background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.08) 0%, rgba(188, 140, 255, 0.08) 100%)',
+              borderRadius: '16px', padding: '18px 24px', border: '1px solid rgba(0, 113, 227, 0.25)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px',
+              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            }}>
               <div>
-                <span style={{ fontFamily: 'monospace', fontWeight: '600', color: '#0071e3', fontSize: '14px' }}>
-                  {currentTask.id}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '18px' }}>👑</span>
+                  <strong style={{ fontSize: '14px', color: '#0071e3' }}>
+                    主协调 Agent: {currentTask.coordinator_agent?.agent_name || 'NEXUS 任务规划与协调中枢 (Lead Coordinator)'}
+                  </strong>
+                  <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', background: 'rgba(0, 113, 227, 0.15)', color: '#0071e3', fontWeight: '600' }}>
+                    Manager-Worker (Sub-Agents as Tools)
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#555', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <span>所连模型: <strong style={{ color: '#1d1d1f' }}>{currentTask.coordinator_agent?.model_id || 'deepseek-reasoner'}</strong></span>
+                  <span>调用 API: <strong style={{ color: '#1d1d1f' }}>{currentTask.coordinator_agent?.provider_name || 'DeepSeek 官方 API'}</strong> (<span style={{ fontFamily: 'monospace', fontSize: '11px' }}>{currentTask.coordinator_agent?.api_endpoint || 'https://api.deepseek.com/v1'}</span>)</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '12px', color: '#86868b' }}>
+                  调用工具 Agent 数量: <strong style={{ color: '#0071e3' }}>{currentTask.steps.length} 个</strong>
                 </span>
-                <span style={{ marginLeft: '12px', fontSize: '12px', padding: '3px 10px', borderRadius: '12px', background: currentTask.status === 'success' ? '#e3f9e5' : '#e8f2ff', color: currentTask.status === 'success' ? '#1a7f37' : '#0071e3', fontWeight: '600' }}>
+                <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '8px', background: currentTask.status === 'success' ? '#e3f9e5' : '#e8f2ff', color: currentTask.status === 'success' ? '#1a7f37' : '#0071e3', fontWeight: '700' }}>
                   {currentTask.status}
                 </span>
-                <span style={{ marginLeft: '8px', fontSize: '12px', color: '#86868b' }}>
-                  复杂度: <strong>{currentTask.complexity}</strong> | 路由模型: <strong>{currentTask.routing_decision?.model_name || 'default'}</strong>
-                </span>
               </div>
-              <div style={{ fontSize: '12px', color: '#86868b' }}>
-                步骤数: {currentTask.steps.length}
+            </div>
+
+            {/* Invoked Tool-Agents & Connected APIs Strip */}
+            <div className="apple-card" style={{ background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid rgba(0,0,0,0.06)' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#1d1d1f', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🛠️</span> 主 Agent 选定调用的工具 Agent 与直连 API 链路
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+                {currentTask.steps.map((step, idx) => (
+                  <div
+                    key={step.step_key}
+                    onClick={() => setSelectedStep(step)}
+                    className="apple-card"
+                    style={{
+                      background: selectedStep?.step_key === step.step_key ? 'rgba(0, 113, 227, 0.05)' : '#f9fafb',
+                      border: `1px solid ${selectedStep?.step_key === step.step_key ? '#0071e3' : 'rgba(0,0,0,0.08)'}`,
+                      borderRadius: '12px', padding: '14px', cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#0071e3', fontFamily: 'monospace' }}>
+                        Step {idx + 1} · {step.step_key}
+                      </span>
+                      <span style={{
+                        fontSize: '10px', padding: '2px 6px', borderRadius: '4px',
+                        background: step.status === 'success' ? 'rgba(52, 199, 89, 0.15)' : (step.status === 'running' ? 'rgba(0, 113, 227, 0.15)' : 'rgba(0,0,0,0.05)'),
+                        color: step.status === 'success' ? '#34c759' : (step.status === 'running' ? '#0071e3' : '#86868b'),
+                        fontWeight: '600',
+                      }}>
+                        {step.status}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#1d1d1f', marginBottom: '4px' }}>
+                      🤖 {step.agent_name || `NEXUS ${step.role.toUpperCase()} 工具 Agent`}
+                    </div>
+
+                    <div style={{ fontSize: '11px', color: '#555', marginBottom: '2px' }}>
+                      🌐 所连 API: <strong style={{ color: '#0071e3' }}>{step.provider_name || 'DeepSeek 官方 API'}</strong>
+                    </div>
+
+                    <div style={{ fontSize: '11px', color: '#86868b', fontFamily: 'monospace' }}>
+                      模型: {step.model_id || 'deepseek-chat'}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Interactive DAG Topology */}
-            <div style={{ background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <div className="apple-card" style={{ background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid rgba(0,0,0,0.06)' }}>
               <div style={{ fontSize: '13px', fontWeight: '600', color: '#1d1d1f', marginBottom: '12px' }}>
-                🗺️ 任务 DAG 编排拓扑图（点击节点查看详细输入输出）
+                🗺️ 任务 DAG 编排拓扑图（点击节点查看详细输入输出与 API 通讯）
               </div>
               <DAGTopology
                 steps={currentTask.steps}
@@ -196,16 +260,39 @@ export const TaskWorkspace: React.FC = () => {
 
             {/* Step Detail Drawer */}
             {selectedStep && (
-              <div style={{ background: '#fff', borderRadius: '16px', padding: '20px', border: '1px solid #0071e3', boxShadow: '0 4px 16px rgba(0,113,227,0.08)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <strong>节点详情: {selectedStep.step_key} [{selectedStep.role}]</strong>
-                  <span style={{ color: '#0071e3', fontWeight: '600', fontSize: '12px' }}>状态: {selectedStep.status}</span>
+              <div className="apple-card apple-animate-in" style={{
+                background: '#fff', borderRadius: '16px', padding: '22px', border: '1px solid #0071e3',
+                boxShadow: '0 8px 24px rgba(0,113,227,0.12)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '10px' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#1d1d1f' }}>
+                      节点详情: {selectedStep.step_key} [{selectedStep.role}]
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#0071e3', fontWeight: '600', marginTop: '2px' }}>
+                      调用的工具 Agent: {selectedStep.agent_name || `NEXUS ${selectedStep.role} 工具 Agent`} ({selectedStep.agent_id || 'custom-tool'})
+                    </div>
+                  </div>
+                  <span style={{ color: '#0071e3', fontWeight: '700', fontSize: '12px', background: 'rgba(0,113,227,0.1)', padding: '3px 10px', borderRadius: '6px' }}>
+                    状态: {selectedStep.status}
+                  </span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#86868b', marginBottom: '8px' }}>
-                  目标: {selectedStep.goal}
+
+                {/* API & Model Endpoint Tag */}
+                <div style={{
+                  display: 'flex', gap: '16px', flexWrap: 'wrap', background: '#f5f5f7',
+                  padding: '10px 14px', borderRadius: '10px', fontSize: '12px', marginBottom: '12px',
+                }}>
+                  <div>服务商 API: <strong>{selectedStep.provider_name || 'DeepSeek 官方 API'}</strong></div>
+                  <div>API 端点: <span style={{ fontFamily: 'monospace' }}>{selectedStep.api_endpoint || 'https://api.deepseek.com/v1'}</span></div>
+                  <div>模型 ID: <strong>{selectedStep.model_id || 'deepseek-chat'}</strong></div>
+                </div>
+
+                <div style={{ fontSize: '12px', color: '#555', marginBottom: '8px' }}>
+                  <strong>执行目标:</strong> {selectedStep.goal}
                 </div>
                 {selectedStep.result && (
-                  <pre style={{ background: '#f5f5f7', padding: '12px', borderRadius: '8px', fontSize: '12px', maxHeight: '200px', overflow: 'auto', fontFamily: 'monospace' }}>
+                  <pre style={{ background: '#f9fafb', border: '1px solid rgba(0,0,0,0.06)', padding: '12px', borderRadius: '8px', fontSize: '12px', maxHeight: '200px', overflow: 'auto', fontFamily: 'monospace' }}>
                     {selectedStep.result}
                   </pre>
                 )}

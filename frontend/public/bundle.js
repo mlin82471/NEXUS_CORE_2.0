@@ -1283,44 +1283,174 @@ const TaskWorkspace = () => {
       gap: '16px'
     }
   }, currentTask ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "apple-card",
+    style: {
+      background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.08) 0%, rgba(188, 140, 255, 0.08) 100%)',
+      borderRadius: '16px',
+      padding: '18px 24px',
+      border: '1px solid rgba(0, 113, 227, 0.25)',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '14px',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginBottom: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '18px'
+    }
+  }, "\uD83D\uDC51"), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      fontSize: '14px',
+      color: '#0071e3'
+    }
+  }, "\u4E3B\u534F\u8C03 Agent: ", currentTask.coordinator_agent?.agent_name || 'NEXUS 任务规划与协调中枢 (Lead Coordinator)'), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 8px',
+      borderRadius: '6px',
+      background: 'rgba(0, 113, 227, 0.15)',
+      color: '#0071e3',
+      fontWeight: '600'
+    }
+  }, "Manager-Worker (Sub-Agents as Tools)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: '#555',
+      display: 'flex',
+      gap: '16px',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\u6240\u8FDE\u6A21\u578B: ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#1d1d1f'
+    }
+  }, currentTask.coordinator_agent?.model_id || 'deepseek-reasoner')), /*#__PURE__*/React.createElement("span", null, "\u8C03\u7528 API: ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#1d1d1f'
+    }
+  }, currentTask.coordinator_agent?.provider_name || 'DeepSeek 官方 API'), " (", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'monospace',
+      fontSize: '11px'
+    }
+  }, currentTask.coordinator_agent?.api_endpoint || 'https://api.deepseek.com/v1'), ")"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: '#86868b'
+    }
+  }, "\u8C03\u7528\u5DE5\u5177 Agent \u6570\u91CF: ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#0071e3'
+    }
+  }, currentTask.steps.length, " \u4E2A")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      padding: '4px 10px',
+      borderRadius: '8px',
+      background: currentTask.status === 'success' ? '#e3f9e5' : '#e8f2ff',
+      color: currentTask.status === 'success' ? '#1a7f37' : '#0071e3',
+      fontWeight: '700'
+    }
+  }, currentTask.status))), /*#__PURE__*/React.createElement("div", {
+    className: "apple-card",
     style: {
       background: '#fff',
       borderRadius: '16px',
-      padding: '18px 24px',
-      border: '1px solid rgba(0,0,0,0.06)',
+      padding: '20px',
+      border: '1px solid rgba(0,0,0,0.06)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '700',
+      color: '#1d1d1f',
+      marginBottom: '14px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDEE0\uFE0F"), " \u4E3B Agent \u9009\u5B9A\u8C03\u7528\u7684\u5DE5\u5177 Agent \u4E0E\u76F4\u8FDE API \u94FE\u8DEF"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+      gap: '12px'
+    }
+  }, currentTask.steps.map((step, idx) => /*#__PURE__*/React.createElement("div", {
+    key: step.step_key,
+    onClick: () => setSelectedStep(step),
+    className: "apple-card",
+    style: {
+      background: selectedStep?.step_key === step.step_key ? 'rgba(0, 113, 227, 0.05)' : '#f9fafb',
+      border: `1px solid ${selectedStep?.step_key === step.step_key ? '#0071e3' : 'rgba(0,0,0,0.08)'}`,
+      borderRadius: '12px',
+      padding: '14px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
+      marginBottom: '6px'
     }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontFamily: 'monospace',
-      fontWeight: '600',
+      fontSize: '11px',
+      fontWeight: '700',
       color: '#0071e3',
-      fontSize: '14px'
+      fontFamily: 'monospace'
     }
-  }, currentTask.id), /*#__PURE__*/React.createElement("span", {
+  }, "Step ", idx + 1, " \xB7 ", step.step_key), /*#__PURE__*/React.createElement("span", {
     style: {
-      marginLeft: '12px',
-      fontSize: '12px',
-      padding: '3px 10px',
-      borderRadius: '12px',
-      background: currentTask.status === 'success' ? '#e3f9e5' : '#e8f2ff',
-      color: currentTask.status === 'success' ? '#1a7f37' : '#0071e3',
+      fontSize: '10px',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      background: step.status === 'success' ? 'rgba(52, 199, 89, 0.15)' : step.status === 'running' ? 'rgba(0, 113, 227, 0.15)' : 'rgba(0,0,0,0.05)',
+      color: step.status === 'success' ? '#34c759' : step.status === 'running' ? '#0071e3' : '#86868b',
       fontWeight: '600'
     }
-  }, currentTask.status), /*#__PURE__*/React.createElement("span", {
-    style: {
-      marginLeft: '8px',
-      fontSize: '12px',
-      color: '#86868b'
-    }
-  }, "\u590D\u6742\u5EA6: ", /*#__PURE__*/React.createElement("strong", null, currentTask.complexity), " | \u8DEF\u7531\u6A21\u578B: ", /*#__PURE__*/React.createElement("strong", null, currentTask.routing_decision?.model_name || 'default'))), /*#__PURE__*/React.createElement("div", {
+  }, step.status)), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '12px',
-      color: '#86868b'
+      fontWeight: '600',
+      color: '#1d1d1f',
+      marginBottom: '4px'
     }
-  }, "\u6B65\u9AA4\u6570: ", currentTask.steps.length)), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83E\uDD16 ", step.agent_name || `NEXUS ${step.role.toUpperCase()} 工具 Agent`), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: '#555',
+      marginBottom: '2px'
+    }
+  }, "\uD83C\uDF10 \u6240\u8FDE API: ", /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#0071e3'
+    }
+  }, step.provider_name || 'DeepSeek 官方 API')), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: '#86868b',
+      fontFamily: 'monospace'
+    }
+  }, "\u6A21\u578B: ", step.model_id || 'deepseek-chat'))))), /*#__PURE__*/React.createElement("div", {
+    className: "apple-card",
     style: {
       background: '#fff',
       borderRadius: '16px',
@@ -1334,39 +1464,75 @@ const TaskWorkspace = () => {
       color: '#1d1d1f',
       marginBottom: '12px'
     }
-  }, "\uD83D\uDDFA\uFE0F \u4EFB\u52A1 DAG \u7F16\u6392\u62D3\u6251\u56FE\uFF08\u70B9\u51FB\u8282\u70B9\u67E5\u770B\u8BE6\u7EC6\u8F93\u5165\u8F93\u51FA\uFF09"), /*#__PURE__*/React.createElement(DAGTopology, {
+  }, "\uD83D\uDDFA\uFE0F \u4EFB\u52A1 DAG \u7F16\u6392\u62D3\u6251\u56FE\uFF08\u70B9\u51FB\u8282\u70B9\u67E5\u770B\u8BE6\u7EC6\u8F93\u5165\u8F93\u51FA\u4E0E API \u901A\u8BAF\uFF09"), /*#__PURE__*/React.createElement(DAGTopology, {
     steps: currentTask.steps,
     selectedKey: selectedStep?.step_key,
     onSelectStep: s => setSelectedStep(s)
   })), selectedStep && /*#__PURE__*/React.createElement("div", {
+    className: "apple-card apple-animate-in",
     style: {
       background: '#fff',
       borderRadius: '16px',
-      padding: '20px',
+      padding: '22px',
       border: '1px solid #0071e3',
-      boxShadow: '0 4px 16px rgba(0,113,227,0.08)'
+      boxShadow: '0 8px 24px rgba(0,113,227,0.12)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginBottom: '8px'
+      alignItems: 'flex-start',
+      marginBottom: '12px',
+      borderBottom: '1px solid rgba(0,0,0,0.06)',
+      paddingBottom: '10px'
     }
-  }, /*#__PURE__*/React.createElement("strong", null, "\u8282\u70B9\u8BE6\u60C5: ", selectedStep.step_key, " [", selectedStep.role, "]"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
+      fontSize: '14px',
+      fontWeight: '700',
+      color: '#1d1d1f'
+    }
+  }, "\u8282\u70B9\u8BE6\u60C5: ", selectedStep.step_key, " [", selectedStep.role, "]"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
       color: '#0071e3',
       fontWeight: '600',
-      fontSize: '12px'
+      marginTop: '2px'
+    }
+  }, "\u8C03\u7528\u7684\u5DE5\u5177 Agent: ", selectedStep.agent_name || `NEXUS ${selectedStep.role} 工具 Agent`, " (", selectedStep.agent_id || 'custom-tool', ")")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#0071e3',
+      fontWeight: '700',
+      fontSize: '12px',
+      background: 'rgba(0,113,227,0.1)',
+      padding: '3px 10px',
+      borderRadius: '6px'
     }
   }, "\u72B6\u6001: ", selectedStep.status)), /*#__PURE__*/React.createElement("div", {
     style: {
+      display: 'flex',
+      gap: '16px',
+      flexWrap: 'wrap',
+      background: '#f5f5f7',
+      padding: '10px 14px',
+      borderRadius: '10px',
       fontSize: '12px',
-      color: '#86868b',
+      marginBottom: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, "\u670D\u52A1\u5546 API: ", /*#__PURE__*/React.createElement("strong", null, selectedStep.provider_name || 'DeepSeek 官方 API')), /*#__PURE__*/React.createElement("div", null, "API \u7AEF\u70B9: ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: 'monospace'
+    }
+  }, selectedStep.api_endpoint || 'https://api.deepseek.com/v1')), /*#__PURE__*/React.createElement("div", null, "\u6A21\u578B ID: ", /*#__PURE__*/React.createElement("strong", null, selectedStep.model_id || 'deepseek-chat'))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: '#555',
       marginBottom: '8px'
     }
-  }, "\u76EE\u6807: ", selectedStep.goal), selectedStep.result && /*#__PURE__*/React.createElement("pre", {
+  }, /*#__PURE__*/React.createElement("strong", null, "\u6267\u884C\u76EE\u6807:"), " ", selectedStep.goal), selectedStep.result && /*#__PURE__*/React.createElement("pre", {
     style: {
-      background: '#f5f5f7',
+      background: '#f9fafb',
+      border: '1px solid rgba(0,0,0,0.06)',
       padding: '12px',
       borderRadius: '8px',
       fontSize: '12px',

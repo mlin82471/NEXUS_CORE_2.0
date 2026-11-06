@@ -13,6 +13,11 @@ export interface PlanStep {
   result?: string;
   attempts?: number;
   verification_status?: string;
+  agent_id?: string;
+  agent_name?: string;
+  model_id?: string;
+  provider_name?: string;
+  api_endpoint?: string;
 }
 
 export interface TaskDetail {
@@ -24,6 +29,15 @@ export interface TaskDetail {
   plan_source?: string;
   complexity?: TaskComplexity;
   execution_mode?: ExecutionMode;
+  coordinator_agent?: {
+    agent_id: string;
+    agent_name: string;
+    role: string;
+    model_id: string;
+    provider_name: string;
+    api_endpoint: string;
+    pattern?: string;
+  };
   routing_decision?: {
     model_name: string;
     tier: string;

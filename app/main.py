@@ -891,17 +891,102 @@ def list_tasks(db: Session = Depends(get_db)):
              "plan_source": t.plan_source, "risk_level": t.risk_level,
              "created_at": t.created_at.isoformat() if t.created_at else None} for t in tasks]
 
+# Role to Tool-Agent & Connected API Mapping
+ROLE_TOOL_AGENT_MAP = {
+    "coding": {
+        "agent_id": "agent-coder-core",
+        "agent_name": "NEXUS 全栈编码工具 Agent",
+        "model_id": "deepseek-chat",
+        "provider_name": "DeepSeek 官方 API",
+        "api_endpoint": "https://api.deepseek.com/v1",
+    },
+    "verification": {
+        "agent_id": "agent-reviewer-core",
+        "agent_name": "NEXUS 4级代码审查工具 Agent",
+        "model_id": "deepseek-reasoner",
+        "provider_name": "DeepSeek Reasoner API",
+        "api_endpoint": "https://api.deepseek.com/v1",
+    },
+    "analysis": {
+        "agent_id": "agent-rca-core",
+        "agent_name": "NEXUS 根因分析诊断工具 Agent",
+        "model_id": "qwen-max",
+        "provider_name": "阿里云百炼 API",
+        "api_endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    },
+    "research": {
+        "agent_id": "agent-research-core",
+        "agent_name": "NEXUS 深度调研工具 Agent",
+        "model_id": "gemini-2.0-flash",
+        "provider_name": "Google Gemini API",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta",
+    },
+    "sre_ops": {
+        "agent_id": "agent-sre-core",
+        "agent_name": "NEXUS 自主自愈运维工具 Agent",
+        "model_id": "deepseek-chat",
+        "provider_name": "DeepSeek 官方 API",
+        "api_endpoint": "https://api.deepseek.com/v1",
+    },
+    "execution": {
+        "agent_id": "agent-sre-core",
+        "agent_name": "NEXUS 脚本执行工具 Agent",
+        "model_id": "deepseek-chat",
+        "provider_name": "DeepSeek 官方 API",
+        "api_endpoint": "https://api.deepseek.com/v1",
+    },
+}
+
+COORDINATOR_AGENT_META = {
+    "agent_id": "agent-planner-core",
+    "agent_name": "NEXUS 任务规划与协调中枢 (Lead Coordinator Agent)",
+    "role": "planner",
+    "model_id": "deepseek-reasoner",
+    "provider_name": "DeepSeek 官方 API",
+    "api_endpoint": "https://api.deepseek.com/v1",
+    "pattern": "Manager-Worker (Sub-Agents as Tools)",
+}
+
+
 @app.get("/tasks/{task_id}", dependencies=AUTH)
 def get_task(task_id: str, db: Session = Depends(get_db)):
     task = db.get(Task, task_id)
     if not task:
         raise HTTPException(404, "Task not found")
+
+    steps_data = []
+    for s in task.steps:
+        agent_info = ROLE_TOOL_AGENT_MAP.get(s.role, {
+            "agent_id": f"agent-{s.role}-tool",
+            "agent_name": f"NEXUS {s.role.capitalize()} 专家工具 Agent",
+            "model_id": task.routing_decision.get("model_name", "deepseek-chat") if task.routing_decision else "deepseek-chat",
+            "provider_name": "智能网关 API",
+            "api_endpoint": "https://api.deepseek.com/v1",
+        })
+        steps_data.append({
+            "step_key": s.step_key,
+            "step_order": s.step_order,
+            "status": s.status,
+            "role": s.role,
+            "goal": s.goal[:200],
+            "depends_on": s.depends_on,
+            "error": s.error,
+            "result": (s.result or "")[:500],
+            "attempts": s.attempts,
+            "agent_id": agent_info["agent_id"],
+            "agent_name": agent_info["agent_name"],
+            "model_id": agent_info["model_id"],
+            "provider_name": agent_info["provider_name"],
+            "api_endpoint": agent_info["api_endpoint"],
+        })
+
     return {
         "id": task.id, "goal": task.goal, "status": task.status,
         "risk_level": task.risk_level, "plan_source": task.plan_source,
         "complexity": task.complexity,
         "execution_mode": task.execution_mode,
         "routing_decision": task.routing_decision or {},
+        "coordinator_agent": COORDINATOR_AGENT_META,
         "execution_round": task.execution_round,
         "idempotency_key": task.idempotency_key,
         "allowed_permissions": task.allowed_permissions or [],
@@ -912,13 +997,7 @@ def get_task(task_id: str, db: Session = Depends(get_db)):
         "created_at": task.created_at.isoformat() if task.created_at else None,
         "started_at": task.started_at.isoformat() if task.started_at else None,
         "finished_at": task.finished_at.isoformat() if task.finished_at else None,
-        "steps": [{
-            "step_key": s.step_key, "step_order": s.step_order,
-            "status": s.status, "role": s.role,
-            "goal": s.goal[:200], "depends_on": s.depends_on,
-            "error": s.error, "result": (s.result or "")[:500],
-            "attempts": s.attempts,
-        } for s in task.steps],
+        "steps": steps_data,
         "events": [{
             "event_type": e.event_type, "message": e.message,
             "created_at": e.created_at.isoformat() if e.created_at else None,
