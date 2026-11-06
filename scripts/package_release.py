@@ -46,7 +46,8 @@ def package_project(output_path: Path | None = None):
     count = 0
     total_uncompressed = 0
 
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
+    temp_zip = zip_path.parent / (zip_path.stem + "_new.zip")
+    with zipfile.ZipFile(temp_zip, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
         for root, dirs, files in os.walk(project_root):
             # Prune excluded directories
             dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
@@ -70,6 +71,20 @@ def package_project(output_path: Path | None = None):
                 zipf.write(file_path, arcname=str(arcname))
                 count += 1
                 total_uncompressed += file_path.stat().st_size
+
+    try:
+        if zip_path.exists():
+            zip_path.unlink()
+        temp_zip.rename(zip_path)
+    except Exception:
+        fallback_zip = zip_path.parent / "NEXUS_CORE_2.1_Project.zip"
+        if fallback_zip.exists():
+            try:
+                fallback_zip.unlink()
+            except Exception:
+                pass
+        temp_zip.rename(fallback_zip)
+        zip_path = fallback_zip
 
     compressed_size = zip_path.stat().st_size
     print(f"✅ Success! Packed {count} files.")
