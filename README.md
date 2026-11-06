@@ -1,11 +1,12 @@
-# NEXUS CORE 2.1 — 企业级多智能体主控与自主研发运维工程引擎
+# NEXUS CORE 2.1 — 企业级多智能体主控与可视化管理控制台平台
 
-> **当前阶段**：`NEXUS 2.1 生产就绪 (Platform 基础设施 + NEXUS DEV 自主软件研发 + NEXUS OPS 自主运维 + 3 大 DSH 杀手级特性)` | **状态**：`PROD READY`  
-> **自动化测试矩阵**：**184 项测试全部通过（158 Pytest + 26 B0 v7 架构契约测试），0 失败**  
-> **核心突破**：首发交付 `app/platform/` 平台底座、`app/dev/` 自主研发系统与 `app/ops/` 自主运维系统，并全面吸收 DSH/Super-Agent 三大杀手级机制：
-> 1. **Observe Mode (影子观察模式)**：渐进式信任机制，默认记录 Agent 意图与预测损耗，人工复核满意后再平滑提升为 AUTO；
-> 2. **Ticket 与 Assignment 解耦 + Thread 订阅**：会话与任务实体分离，支持运行中的 Worker 接收中途追加的用户需求，无需重跑 DAG；
-> 3. **语义级 Watchdog (防活锁巡检)**：不仅抓捕硬崩溃，还以语义重复度与 Token 消耗速率实时识别“进程存活但死循环”的活锁并动态阻断注入负反馈。
+> **当前阶段**：`NEXUS CONTROL CENTER 2.1 (深色科技工作区 + 5步可视化 Agent 向导 + 7大模型接入中心 + 真实 Token 成本穿透审计)` | **状态**：`PROD READY`  
+> **自动化测试矩阵**：**199 项测试全部通过（173 Pytest + 26 B0 v7 架构契约测试），0 失败**  
+> **核心突破**：将 NEXUS 从需要编写 Python 代码/手动配置的底层引擎，全面升级为企业级一站式智能体操作系统：
+> 1. **深色极客科技控制台 (Dark Obsidian UI)**：支持深色/浅色一键切换、响应式侧边栏、状态胶囊、离线零外部 CDN 毫秒级打开；
+> 2. **Agent 可视化管理中心 (`app/agents/`)**：5步向导式创建、内置企业角色模板、权限分级（Strict/Supervised/Autonomous）、一键沙箱测试运行；
+> 3. **多模型接入中心 (`app/model_hub/`)**：预设 7 大服务商（DeepSeek、通义千问、OpenAI、Gemini、Claude、Ollama 本地、自定义中转）、API Key 脱敏防护、毫秒级测速与 3 模智能路由；
+> 4. **Token 与成本监控中心 (`app/usage/`)**：严格区分真实官方用量与估算值、5 维穿透图表、任务重试成本溢价审计与 B0/B1 原生预算熔断。
 
 ---
 
@@ -111,7 +112,7 @@ python scripts/nexus_cli.py memory search-hybrid "高并发缓存淘汰锁机制
 
 ### 4. 自动化测试验证
 ```bash
-# 运行 158 项 Pytest 全量测试 (含 DEV 自主研发、OPS 自主运维、DSH 杀手特性、适配器、记忆、演进、流式推流等)
+# 运行 173 项 Pytest 全量测试 (含 Control Center 2.1 控制中心、DEV 自主研发、OPS 自主运维、DSH 杀手特性等)
 python -m pytest tests/
 
 # 运行 26 项 B0 v7 架构契约独立验证套件 (100% 严苛决断表)

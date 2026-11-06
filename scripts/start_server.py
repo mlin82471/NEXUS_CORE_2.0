@@ -28,7 +28,7 @@ def _open_browser_when_ready():
 
 def main():
     print("=" * 60)
-    print("⚡ Starting NEXUS CORE 2.0 Engine...")
+    print("⚡ Starting NEXUS CORE 2.1 Control Center Engine...")
     print(f"📁 Project Root: {PROJECT_ROOT}")
     print(f"🔧 Dev Mode:     {settings.dev_mode}")
     print(f"🤖 Planner:      {settings.planner_model} (Available: {settings.planner_available})")

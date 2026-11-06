@@ -7,6 +7,8 @@ const API_BASE = 'http://127.0.0.1:8000';
 
 // ===== types.ts =====
 
+// ===== Control Center 2.1 Types =====
+
 // ===== components/DAGTopology.tsx =====
 
 const DAGTopology = ({
@@ -2292,14 +2294,3523 @@ const AgentMatrix = () => {
   })));
 };
 
+// ===== components/DashboardOverview.tsx =====
+
+const DashboardOverview = ({
+  onNavigate,
+  isDark = true
+}) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const fetchOverview = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/dashboard/overview`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      setData(json);
+      setError(null);
+    } catch (err) {
+      setError(err.message || '加载总览失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchOverview();
+  }, []);
+  const cardBg = isDark ? '#161b22' : '#ffffff';
+  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
+  const textSub = isDark ? '#8b949e' : '#86868b';
+  if (loading && !data) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: '40px',
+        textAlign: 'center',
+        color: textSub
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '24px',
+        marginBottom: '8px'
+      }
+    }, "\u26A1"), "\u6B63\u5728\u6C47\u805A NEXUS 2.1 \u5168\u7CFB\u7EDF\u9065\u6D4B\u6307\u6807...");
+  }
+  if (error && !data) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: '30px',
+        background: 'rgba(239, 68, 68, 0.1)',
+        border: '1px solid #ef4444',
+        borderRadius: '12px',
+        color: '#ef4444',
+        margin: '20px 0'
+      }
+    }, /*#__PURE__*/React.createElement("strong", null, "\u52A0\u8F7D\u6570\u636E\u5F02\u5E38\uFF1A"), " ", error, /*#__PURE__*/React.createElement("button", {
+      onClick: fetchOverview,
+      style: {
+        marginLeft: '12px',
+        padding: '4px 10px',
+        background: '#ef4444',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer'
+      }
+    }, "\u91CD\u8BD5"));
+  }
+  const kpi = data?.kpi || {
+    today_tokens: 128600,
+    today_cost_usd: 0.82,
+    today_tasks: 46,
+    avg_tokens_per_task: 2800,
+    real_tokens_pct: 100.0,
+    estimated_tokens_pct: 0.0
+  };
+  const sys = data?.system || {
+    core_engine: 'online',
+    active_agents: 6,
+    total_agents: 6,
+    connected_models: 8,
+    total_models: 8,
+    routing_mode: 'auto_complexity'
+  };
+  const budget = data?.budget;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? 'linear-gradient(135deg, #161b22 0%, #1f2937 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%)',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '24px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      marginBottom: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: 0,
+      fontSize: '22px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.02em'
+    }
+  }, "NEXUS CONTROL CENTER 2.1"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      fontWeight: '600',
+      padding: '2px 8px',
+      borderRadius: '10px',
+      background: 'rgba(56, 139, 253, 0.15)',
+      color: '#58a6ff',
+      border: '1px solid rgba(56, 139, 253, 0.3)'
+    }
+  }, "PROD READY")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      color: textSub
+    }
+  }, "\u7EDF\u4E00\u7BA1\u7406 \xB7 Agent \u914D\u7F6E \xB7 \u6A21\u578B\u63A5\u5165 \xB7 Token \u76D1\u63A7 \xB7 \u667A\u80FD\u8DEF\u7531 \xB7 \u6027\u80FD\u5BF9\u6BD4\u5B9E\u9A8C\u5BA4")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      fontSize: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      background: '#3fb950',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textSub
+    }
+  }, "CORE \u5F15\u64CE:"), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#3fb950'
+    }
+  }, "\u8FD0\u884C\u6B63\u5E38")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      fontSize: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      background: '#58a6ff',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textSub
+    }
+  }, "\u6D3B\u8DC3 Agent:"), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: textMain
+    }
+  }, sys.active_agents, " / ", sys.total_agents)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      fontSize: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      background: '#bc8cff',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textSub
+    }
+  }, "\u63A5\u5165\u6A21\u578B:"), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: textMain
+    }
+  }, sys.connected_models)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      fontSize: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textSub
+    }
+  }, "\u667A\u80FD\u8DEF\u7531:"), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#58a6ff'
+    }
+  }, sys.routing_mode)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '13px',
+      color: textSub,
+      fontWeight: '500'
+    }
+  }, "\u4ECA\u65E5 Token \u7528\u91CF"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '6px',
+      background: 'rgba(63, 185, 80, 0.15)',
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "\u2713 ", kpi.real_tokens_pct, "% \u771F\u5B9E\u53E3\u5F84")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '28px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.03em',
+      marginBottom: '6px'
+    }
+  }, (kpi.today_tokens / 1000).toFixed(1), "k"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u8F93\u5165 + \u8F93\u51FA + \u63A8\u7406 (\u6392\u9664\u4F30\u7B97\u6DF7\u5408)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '13px',
+      color: textSub,
+      fontWeight: '500'
+    }
+  }, "\u4ECA\u65E5 API \u9884\u4F30\u8D39\u7528"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '6px',
+      background: 'rgba(56, 139, 253, 0.15)',
+      color: '#58a6ff',
+      fontWeight: '600'
+    }
+  }, "USD \u6298\u7B97")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '28px',
+      fontWeight: '700',
+      color: '#3fb950',
+      letterSpacing: '-0.03em',
+      marginBottom: '6px'
+    }
+  }, "$", kpi.today_cost_usd.toFixed(2)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u6309\u670D\u52A1\u5546\u8D39\u7387\u6838\u7B97 (\u6298\u5408\u7EA6 \xA5", (kpi.today_cost_usd * 7.25).toFixed(2), ")")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '13px',
+      color: textSub,
+      fontWeight: '500'
+    }
+  }, "\u5DF2\u6267\u884C\u4EFB\u52A1\u603B\u91CF"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '6px',
+      background: 'rgba(188, 140, 255, 0.15)',
+      color: '#bc8cff',
+      fontWeight: '600'
+    }
+  }, "B1 \u5F15\u64CE\u9A71\u52A8")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '28px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.03em',
+      marginBottom: '6px'
+    }
+  }, kpi.today_tasks), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u5355 Agent \u76F4\u8FBE + \u534F\u540C DAG \u6C47\u603B")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '13px',
+      color: textSub,
+      fontWeight: '500'
+    }
+  }, "\u5E73\u5747\u5355\u4EFB\u52A1\u6D88\u8017"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '6px',
+      background: 'rgba(210, 153, 34, 0.15)',
+      color: '#d29922',
+      fontWeight: '600'
+    }
+  }, "Token \u6548\u7387")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '28px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.03em',
+      marginBottom: '6px'
+    }
+  }, (kpi.avg_tokens_per_task / 1000).toFixed(1), "k"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u53CD\u65E0\u6548\u591A Agent \u81A8\u80C0\u8BBE\u8BA1"))), budget && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? 'rgba(56, 139, 253, 0.08)' : 'rgba(0, 113, 227, 0.05)',
+      border: `1px solid ${isDark ? 'rgba(56, 139, 253, 0.2)' : 'rgba(0, 113, 227, 0.15)'}`,
+      borderRadius: '12px',
+      padding: '14px 20px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '16px'
+    }
+  }, "\uD83D\uDEE1\uFE0F"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\u5168\u5C40\u9884\u7B97\u5F3A\u9501\u5B9A\u7194\u65AD\u5668 (B0/B1 \u539F\u751F\u5F3A\u7EA6\u675F)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u4ECA\u65E5\u5DF2\u7528 ", budget.pct_used, "% (", budget.current_tokens.toLocaleString(), " / ", budget.limit_tokens.toLocaleString(), " Tokens) \xB7 \u72B6\u6001: ", budget.message))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: '200px',
+      height: '8px',
+      background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+      borderRadius: '4px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${Math.min(100, budget.pct_used)}%`,
+      height: '100%',
+      background: budget.pct_used >= 80 ? '#f85149' : '#3fb950',
+      borderRadius: '4px',
+      transition: 'width 0.3s ease'
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83D\uDCCA \u6700\u8FD1 7 \u5929 Token \u6D88\u8017\u4E0E\u8D39\u7528\u8D8B\u52BF"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u5355\u4F4D: \u5343 Token (k)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      height: '140px',
+      padding: '0 10px',
+      gap: '8px'
+    }
+  }, (data?.time_series_trends?.days || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map((day, idx) => {
+    const val = data?.time_series_trends?.tokens_k[idx] || 50;
+    const maxVal = Math.max(...(data?.time_series_trends?.tokens_k || [140])) * 1.15;
+    const heightPct = Math.round(val / maxVal * 100);
+    const cost = data?.time_series_trends?.cost_usd[idx] || 0.45;
+    return /*#__PURE__*/React.createElement("div", {
+      key: day,
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        flex: 1,
+        gap: '6px'
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '10px',
+        color: textSub
+      }
+    }, "$", cost.toFixed(2)), /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: '100%',
+        maxWidth: '36px',
+        height: `${heightPct}%`,
+        background: 'linear-gradient(180deg, #58a6ff 0%, #1f6feb 100%)',
+        borderRadius: '6px 6px 0 0',
+        transition: 'height 0.4s ease'
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '11px',
+        color: textSub,
+        fontWeight: '500'
+      }
+    }, day));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83C\uDF10 \u6A21\u578B\u63A5\u5165\u8D39\u7528\u5206\u5E03 (Top Models)"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNavigate('models'),
+    style: {
+      background: 'none',
+      border: 'none',
+      color: '#58a6ff',
+      fontSize: '12px',
+      cursor: 'pointer',
+      padding: 0
+    }
+  }, "\u7BA1\u7406\u6A21\u578B \u2192")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px'
+    }
+  }, (data?.model_cost_share || []).map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.model_id,
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      fontSize: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textMain,
+      fontWeight: '500'
+    }
+  }, m.model_id), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textSub
+    }
+  }, "$", m.cost_usd.toFixed(3), " (", m.share_pct, "%)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: '100%',
+      height: '6px',
+      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+      borderRadius: '3px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${m.share_pct}%`,
+      height: '100%',
+      background: m.provider_id === 'deepseek' ? '#58a6ff' : m.provider_id === 'qwen' ? '#bc8cff' : '#3fb950',
+      borderRadius: '3px'
+    }
+  }))))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83E\uDD16 Agent \u6548\u7387\u4E0E\u6D88\u8017\u6392\u884C\u699C"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNavigate('agents'),
+    style: {
+      background: 'none',
+      border: 'none',
+      color: '#58a6ff',
+      fontSize: '12px',
+      cursor: 'pointer',
+      padding: 0
+    }
+  }, "\u67E5\u770B\u5168\u90E8 Agent \u2192")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px'
+    }
+  }, (data?.recent_agent_leaderboard || []).map((ag, i) => /*#__PURE__*/React.createElement("div", {
+    key: ag.agent_id,
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '10px 14px',
+      background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+      borderRadius: '10px',
+      border: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '22px',
+      height: '22px',
+      borderRadius: '50%',
+      background: i === 0 ? 'rgba(210, 153, 34, 0.2)' : 'rgba(255,255,255,0.06)',
+      color: i === 0 ? '#d29922' : textSub,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '11px',
+      fontWeight: '700'
+    }
+  }, i + 1), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, ag.agent_name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, ag.task_count, " \u6B21\u4EFB\u52A1 \xB7 \u5E73\u5747 ", (ag.avg_tokens_per_task / 1000).toFixed(1), "k tokens"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, ag.total_tokens.toLocaleString(), " tok"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: '#3fb950'
+    }
+  }, "$", ag.total_cost_usd.toFixed(3))))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 8px 0',
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83D\uDE80 \u63A7\u5236\u53F0\u5FEB\u6377\u901A\u9053"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: '0 0 16px 0',
+      fontSize: '13px',
+      color: textSub,
+      lineHeight: 1.5
+    }
+  }, "\u65E0\u9700\u624B\u52A8\u7F16\u5199\u4EE3\u7801\u6216\u4FEE\u6539\u914D\u7F6E\u6587\u4EF6\uFF0C\u70B9\u51FB\u5373\u53EF\u901A\u8FC7\u4EA4\u4E92\u5411\u5BFC\u5B8C\u6210\u64CD\u4F5C\uFF1A")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNavigate('agents'),
+    style: {
+      padding: '14px',
+      borderRadius: '12px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: textMain,
+      textAlign: 'left',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '18px',
+      marginBottom: '6px'
+    }
+  }, "\uD83E\uDD16 +"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600'
+    }
+  }, "\u521B\u5EFA\u65B0 Agent"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, "5\u6B65\u5411\u5BFC\uFF0C\u6A21\u677F\u4E00\u952E\u5E94\u7528")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNavigate('models'),
+    style: {
+      padding: '14px',
+      borderRadius: '12px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: textMain,
+      textAlign: 'left',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '18px',
+      marginBottom: '6px'
+    }
+  }, "\uD83C\uDF10 +"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600'
+    }
+  }, "\u63A5\u5165\u65B0\u5927\u6A21\u578B"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, "DeepSeek/Qwen/\u6D4B\u901F")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNavigate('tasks'),
+    style: {
+      padding: '14px',
+      borderRadius: '12px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: textMain,
+      textAlign: 'left',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '18px',
+      marginBottom: '6px'
+    }
+  }, "\uD83D\uDCDD \uD83D\uDCE1"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600'
+    }
+  }, "\u5B9E\u65F6\u63A8\u6D41\u4EFB\u52A1"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, "SSE \u5B9E\u65F6\u6D41\u4E0E\u5373\u65F6\u53D6\u6D88")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => onNavigate('benchmark'),
+    style: {
+      padding: '14px',
+      borderRadius: '12px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: textMain,
+      textAlign: 'left',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '18px',
+      marginBottom: '6px'
+    }
+  }, "\u2696\uFE0F \uD83D\uDD2C"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600'
+    }
+  }, "\u5BF9\u6BD4\u5B9E\u9A8C\u5BA4"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, "\u591A\u6A21\u578B/\u5355\u591AAgent\u6536\u76CA\u8BC4\u6D4B"))))));
+};
+
+// ===== components/AgentCenter.tsx =====
+
+const AgentCenter = ({
+  isDark = true
+}) => {
+  const [agents, setAgents] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [selectedRole, setSelectedRole] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Wizard Modal State
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
+  const [expertMode, setExpertMode] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    agent_id: '',
+    role: 'coding',
+    template_id: 'tpl-coder',
+    primary_model_id: 'deepseek-chat',
+    fallback_model_id: 'qwen-plus',
+    budget_tokens_per_task: 35000,
+    max_retries: 1,
+    timeout_seconds: 60,
+    permission_level: 'supervised',
+    allowed_tools: ['read_files', 'write_files'],
+    system_prompt: ''
+  });
+
+  // Test Runner State
+  const [testAgent, setTestAgent] = useState(null);
+  const [testPrompt, setTestPrompt] = useState('编写一个Python函数，快速检测列表中是否存在重复元素');
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+  const fetchAgents = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/agents`);
+      if (res.ok) {
+        const data = await res.json();
+        setAgents(data);
+      }
+    } catch (err) {
+      console.error('Failed to load agents', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchTemplates = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/agents/templates`);
+      if (res.ok) {
+        const data = await res.json();
+        setTemplates(data);
+      }
+    } catch (err) {
+      console.error('Failed to load templates', err);
+    }
+  };
+  useEffect(() => {
+    fetchAgents();
+    fetchTemplates();
+  }, []);
+  const handleTemplateSelect = tplId => {
+    const tpl = templates.find(t => t.template_id === tplId);
+    if (tpl) {
+      setForm(prev => ({
+        ...prev,
+        template_id: tplId,
+        role: tpl.role,
+        primary_model_id: tpl.recommended_model,
+        budget_tokens_per_task: tpl.default_budget_tokens,
+        permission_level: tpl.default_permission_level,
+        allowed_tools: tpl.recommended_tools,
+        system_prompt: tpl.system_prompt_preview
+      }));
+    }
+  };
+  const handleToggle = async agentId => {
+    try {
+      const res = await fetch(`${API_BASE}/api/agents/${agentId}/toggle`, {
+        method: 'POST'
+      });
+      if (res.ok) fetchAgents();
+    } catch (err) {
+      console.error('Toggle failed', err);
+    }
+  };
+  const handleDelete = async agentId => {
+    if (!confirm(`确认删除 Agent '${agentId}' 吗？`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/agents/${agentId}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) fetchAgents();
+    } catch (err) {
+      console.error('Delete failed', err);
+    }
+  };
+  const handleCreateSubmit = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/agents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        setShowWizard(false);
+        setWizardStep(1);
+        fetchAgents();
+      } else {
+        const err = await res.json();
+        alert(`创建失败: ${err.detail || '未知错误'}`);
+      }
+    } catch (err) {
+      alert(`网络异常: ${err.message}`);
+    }
+  };
+  const handleRunTest = async () => {
+    if (!testAgent) return;
+    try {
+      setTestLoading(true);
+      setTestResult(null);
+      const res = await fetch(`${API_BASE}/api/agents/${testAgent.agent_id}/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: testPrompt
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTestResult(data);
+        fetchAgents(); // update tokens telemetry
+      }
+    } catch (err) {
+      setTestResult({
+        ok: false,
+        error: err.message
+      });
+    } finally {
+      setTestLoading(false);
+    }
+  };
+  const cardBg = isDark ? '#161b22' : '#ffffff';
+  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
+  const textSub = isDark ? '#8b949e' : '#86868b';
+  const filteredAgents = agents.filter(a => {
+    if (selectedRole !== 'all' && a.role !== selectedRole) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return a.name.toLowerCase().includes(q) || a.agent_id.toLowerCase().includes(q) || a.description.toLowerCase().includes(q);
+    }
+    return true;
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: '0 0 4px 0',
+      fontSize: '20px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\uD83E\uDD16 Agent \u7BA1\u7406\u4E2D\u5FC3"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      color: textSub
+    }
+  }, "\u89D2\u8272\u914D\u7F6E \xB7 \u6A21\u677F\u5B9E\u4F8B\u5316 \xB7 \u6743\u9650\u6A21\u578B\u5206\u914D \xB7 \u72EC\u7ACB\u6838\u9A8C\u901A\u8FC7\u7387 \xB7 \u4E00\u952E\u6C99\u7BB1\u6D4B\u8BD5")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setShowWizard(true);
+      setWizardStep(1);
+    },
+    style: {
+      padding: '10px 18px',
+      borderRadius: '10px',
+      border: 'none',
+      background: '#238636',
+      color: '#ffffff',
+      fontWeight: '600',
+      fontSize: '13px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "+"), " 5\u6B65\u5411\u5BFC\u521B\u5EFA Agent"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '12px',
+      alignItems: 'center',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "\u641C\u7D22 Agent \u540D\u79F0\u3001ID \u6216\u63CF\u8FF0...",
+    value: searchQuery,
+    onChange: e => setSearchQuery(e.target.value),
+    style: {
+      flex: '1',
+      minWidth: '220px',
+      padding: '8px 14px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: cardBg,
+      color: textMain,
+      fontSize: '13px'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '6px',
+      overflowX: 'auto'
+    }
+  }, ['all', 'planner', 'coding', 'analysis', 'verification', 'sre_ops', 'research'].map(r => /*#__PURE__*/React.createElement("button", {
+    key: r,
+    onClick: () => setSelectedRole(r),
+    style: {
+      padding: '6px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${selectedRole === r ? '#58a6ff' : borderCol}`,
+      background: selectedRole === r ? 'rgba(56, 139, 253, 0.15)' : cardBg,
+      color: selectedRole === r ? '#58a6ff' : textSub,
+      fontSize: '12px',
+      cursor: 'pointer',
+      whiteSpace: 'nowrap'
+    }
+  }, r === 'all' ? '全部角色' : r.toUpperCase())))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+      gap: '16px'
+    }
+  }, filteredAgents.map(ag => /*#__PURE__*/React.createElement("div", {
+    key: ag.agent_id,
+    style: {
+      background: cardBg,
+      border: `1px solid ${ag.status === 'active' ? borderCol : 'rgba(239, 68, 68, 0.2)'}`,
+      borderRadius: '14px',
+      padding: '18px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      gap: '14px',
+      opacity: ag.status === 'active' ? 1 : 0.7,
+      transition: 'transform 0.15s ease'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '15px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, ag.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      fontFamily: 'monospace'
+    }
+  }, ag.agent_id)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 8px',
+      borderRadius: '10px',
+      background: ag.status === 'active' ? 'rgba(63, 185, 80, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+      color: ag.status === 'active' ? '#3fb950' : '#f85149',
+      fontWeight: '600'
+    }
+  }, ag.status === 'active' ? '● 运行中' : '○ 已暂停'))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      margin: '0 0 12px 0',
+      lineHeight: 1.4,
+      minHeight: '34px'
+    }
+  }, ag.description || '无详细描述'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '6px',
+      marginBottom: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+      color: '#58a6ff'
+    }
+  }, "\u4E3B: ", ag.primary_model_id), ag.fallback_model_id && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+      color: textSub
+    }
+  }, "\u5907: ", ag.fallback_model_id), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      background: 'rgba(188, 140, 255, 0.15)',
+      color: '#bc8cff'
+    }
+  }, ag.permission_level.toUpperCase()), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 6px',
+      borderRadius: '4px',
+      background: 'rgba(210, 153, 34, 0.15)',
+      color: '#d29922'
+    }
+  }, "\u4E0A\u9650: ", (ag.budget_tokens_per_task / 1000).toFixed(0), "k tok")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '8px',
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      padding: '8px 10px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '10px',
+      color: textSub
+    }
+  }, "\u7D2F\u8BA1 Token"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, (ag.total_tokens_consumed / 1000).toFixed(1), "k")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '10px',
+      color: textSub
+    }
+  }, "\u4EFB\u52A1\u5B8C\u6210\u6570"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, ag.total_tasks_completed)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '10px',
+      color: textSub
+    }
+  }, "\u72EC\u7ACB\u6838\u9A8C\u7387"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      fontWeight: '700',
+      color: '#3fb950'
+    }
+  }, (ag.verification_pass_rate * 100).toFixed(0), "%")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTop: `1px solid ${borderCol}`,
+      paddingTop: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setTestAgent(ag);
+      setTestResult(null);
+    },
+    style: {
+      padding: '6px 12px',
+      borderRadius: '6px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: '#58a6ff',
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\u25B6 \u8FD0\u884C\u6D4B\u8BD5"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleToggle(ag.agent_id),
+    style: {
+      padding: '6px 10px',
+      borderRadius: '6px',
+      border: `1px solid ${borderCol}`,
+      background: cardBg,
+      color: textSub,
+      fontSize: '12px',
+      cursor: 'pointer'
+    }
+  }, ag.status === 'active' ? '⏸️ 暂停' : '▶ 启用'), !ag.tags?.includes('builtin') && /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleDelete(ag.agent_id),
+    style: {
+      padding: '6px 10px',
+      borderRadius: '6px',
+      border: '1px solid rgba(239, 68, 68, 0.3)',
+      background: 'rgba(239, 68, 68, 0.1)',
+      color: '#f85149',
+      fontSize: '12px',
+      cursor: 'pointer'
+    }
+  }, "\uD83D\uDDD1\uFE0F")))))), showWizard && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      width: '90%',
+      maxWidth: '640px',
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+      boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 4px 0',
+      fontSize: '17px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\uD83E\uDDD9 \u521B\u5EFA\u65B0 Agent (\u5411\u5BFC\u6B65\u9AA4 ", wizardStep, " / 5)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u6839\u636E\u63A8\u8350\u5411\u5BFC\u9010\u6B65\u914D\u7F6E\uFF0C\u6216\u5F00\u542F\u4E13\u5BB6\u6A21\u5F0F\u5FAE\u8C03\u5E95\u5C42\u53C2\u6570")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowWizard(false),
+    style: {
+      background: 'none',
+      border: 'none',
+      color: textSub,
+      fontSize: '18px',
+      cursor: 'pointer'
+    }
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '8px'
+    }
+  }, [1, 2, 3, 4, 5].map(s => /*#__PURE__*/React.createElement("div", {
+    key: s,
+    onClick: () => setWizardStep(s),
+    style: {
+      flex: 1,
+      height: '4px',
+      borderRadius: '2px',
+      cursor: 'pointer',
+      background: s <= wizardStep ? '#58a6ff' : isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+    }
+  }))), wizardStep === 1 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: '14px',
+      color: textMain
+    }
+  }, "\u6B65\u9AA4 1: \u57FA\u672C\u8EAB\u4EFD\u4E0E\u4EE3\u53F7"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "Agent \u540D\u79F0"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "\u4F8B\u5982: \u8D22\u52A1\u5BA1\u8BA1\u5206\u6790\u4E13\u5BB6",
+    value: form.name,
+    onChange: e => setForm({
+      ...form,
+      name: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u552F\u4E00\u4EE3\u53F7 (\u53EF\u9009\uFF0C\u7559\u7A7A\u81EA\u52A8\u751F\u6210)"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "\u4F8B\u5982: agent-fintech-audit",
+    value: form.agent_id,
+    onChange: e => setForm({
+      ...form,
+      agent_id: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  }))), wizardStep === 2 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: '14px',
+      color: textMain
+    }
+  }, "\u6B65\u9AA4 2: \u4E13\u4E1A\u804C\u8D23\u4E0E\u5185\u7F6E\u6A21\u677F"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '6px'
+    }
+  }, "\u9009\u62E9\u5E38\u7528\u6A21\u677F\u5FEB\u901F\u586B\u5145"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '8px',
+      maxHeight: '180px',
+      overflowY: 'auto'
+    }
+  }, templates.map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.template_id,
+    onClick: () => handleTemplateSelect(t.template_id),
+    style: {
+      padding: '10px',
+      borderRadius: '8px',
+      border: `1px solid ${form.template_id === t.template_id ? '#58a6ff' : borderCol}`,
+      background: form.template_id === t.template_id ? 'rgba(56, 139, 253, 0.15)' : isDark ? '#0d1117' : '#f9fafb',
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, t.display_title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    }
+  }, t.description)))))), wizardStep === 3 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: '14px',
+      color: textMain
+    }
+  }, "\u6B65\u9AA4 3: \u9ED8\u8BA4\u6A21\u578B\u4E0E\u6545\u969C\u964D\u7EA7\u5907\u7528"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u4E3B\u6267\u884C\u6A21\u578B"), /*#__PURE__*/React.createElement("select", {
+    value: form.primary_model_id,
+    onChange: e => setForm({
+      ...form,
+      primary_model_id: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "deepseek-chat"
+  }, "DeepSeek V3 (Chat) - $0.14/M (\u63A8\u8350\u4EE3\u7801/\u901A\u7528)"), /*#__PURE__*/React.createElement("option", {
+    value: "deepseek-reasoner"
+  }, "DeepSeek R1 (Reasoner) - $0.55/M (\u9AD8\u9636\u903B\u8F91\u63A8\u7406)"), /*#__PURE__*/React.createElement("option", {
+    value: "qwen-plus"
+  }, "\u901A\u4E49\u5343\u95EE Qwen Plus - $0.40/M"), /*#__PURE__*/React.createElement("option", {
+    value: "qwen-max"
+  }, "\u901A\u4E49\u5343\u95EE Qwen Max - $1.60/M"), /*#__PURE__*/React.createElement("option", {
+    value: "gpt-4o"
+  }, "OpenAI GPT-4o"), /*#__PURE__*/React.createElement("option", {
+    value: "claude-3-5-sonnet"
+  }, "Claude 3.5 Sonnet"), /*#__PURE__*/React.createElement("option", {
+    value: "gemini-2.0-flash"
+  }, "Google Gemini 2.0 Flash"), /*#__PURE__*/React.createElement("option", {
+    value: "ollama-llama3.3"
+  }, "Ollama Llama 3.3 (\u672C\u5730\u79BB\u7EBF $0.00)"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u81EA\u52A8\u964D\u7EA7\u5907\u7528\u6A21\u578B"), /*#__PURE__*/React.createElement("select", {
+    value: form.fallback_model_id,
+    onChange: e => setForm({
+      ...form,
+      fallback_model_id: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "qwen-plus"
+  }, "\u901A\u4E49\u5343\u95EE Qwen Plus (\u9AD8\u53EF\u7528\u5907\u4EFD)"), /*#__PURE__*/React.createElement("option", {
+    value: "deepseek-chat"
+  }, "DeepSeek V3"), /*#__PURE__*/React.createElement("option", {
+    value: "gemini-2.0-flash"
+  }, "Gemini 2.0 Flash"), /*#__PURE__*/React.createElement("option", {
+    value: "ollama-llama3.3"
+  }, "\u672C\u5730\u79BB\u7EBF Ollama")))), wizardStep === 4 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: '14px',
+      color: textMain
+    }
+  }, "\u6B65\u9AA4 4: \u5355\u4EFB\u52A1 Token \u9884\u7B97\u4E0E\u9632\u6B7B\u9501\u7EA6\u675F"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u5355\u4EFB\u52A1 Token \u786C\u7194\u65AD\u4E0A\u9650: ", form.budget_tokens_per_task.toLocaleString(), " Tokens"), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "5000",
+    max: "100000",
+    step: "5000",
+    value: form.budget_tokens_per_task,
+    onChange: e => setForm({
+      ...form,
+      budget_tokens_per_task: Number(e.target.value)
+    }),
+    style: {
+      width: '100%'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u6700\u5927\u91CD\u8BD5\u6B21\u6570 (\u53CD\u81A8\u80C0)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "0",
+    max: "3",
+    value: form.max_retries,
+    onChange: e => setForm({
+      ...form,
+      max_retries: Number(e.target.value)
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u8D85\u65F6\u786C\u7194\u65AD (\u79D2)"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "10",
+    max: "300",
+    value: form.timeout_seconds,
+    onChange: e => setForm({
+      ...form,
+      timeout_seconds: Number(e.target.value)
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  })))), wizardStep === 5 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      fontSize: '14px',
+      color: textMain
+    }
+  }, "\u6B65\u9AA4 5: \u81EA\u4E3B\u6743\u9650\u7B49\u7EA7\u4E0E\u5DE5\u5177\u6302\u8F7D"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u81EA\u4E3B\u6743\u9650\u7B49\u7EA7"), /*#__PURE__*/React.createElement("select", {
+    value: form.permission_level,
+    onChange: e => setForm({
+      ...form,
+      permission_level: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "strict"
+  }, "STRICT: \u4E25\u683C\u53EA\u8BFB\u6C99\u7BB1\uFF0C\u4E0D\u53EF\u89E6\u53D1\u4FEE\u6539"), /*#__PURE__*/React.createElement("option", {
+    value: "supervised"
+  }, "SUPERVISED (\u63A8\u8350): \u53D7\u63A7\u81EA\u4E3B\uFF0C\u9AD8\u98CE\u9669\u5199\u64CD\u4F5C\u9700\u4EBA\u5DE5\u5BA1\u6279"), /*#__PURE__*/React.createElement("option", {
+    value: "autonomous"
+  }, "AUTONOMOUS: \u5728\u9884\u7B97\u4E0E\u6388\u6743\u5185\u5168\u81EA\u4E3B\u6267\u884C"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u4E13\u5BB6\u6A21\u5F0F (\u5FAE\u8C03\u5E95\u5C42 System Prompt)"), /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: expertMode,
+    onChange: e => setExpertMode(e.target.checked)
+  })), expertMode && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u7CFB\u7EDF\u63D0\u793A\u8BCD (System Prompt)"), /*#__PURE__*/React.createElement("textarea", {
+    rows: 4,
+    value: form.system_prompt,
+    onChange: e => setForm({
+      ...form,
+      system_prompt: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain,
+      fontSize: '12px'
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTop: `1px solid ${borderCol}`,
+      paddingTop: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    disabled: wizardStep === 1,
+    onClick: () => setWizardStep(prev => prev - 1),
+    style: {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: cardBg,
+      color: textSub,
+      cursor: wizardStep === 1 ? 'not-allowed' : 'pointer'
+    }
+  }, "\u4E0A\u4E00\u6B65"), wizardStep < 5 ? /*#__PURE__*/React.createElement("button", {
+    onClick: () => setWizardStep(prev => prev + 1),
+    style: {
+      padding: '8px 18px',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#58a6ff',
+      color: '#fff',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\u4E0B\u4E00\u6B65 \u2192") : /*#__PURE__*/React.createElement("button", {
+    onClick: handleCreateSubmit,
+    style: {
+      padding: '8px 22px',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#238636',
+      color: '#fff',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\uD83D\uDE80 \u786E\u8BA4\u5E76\u6CE8\u518C Agent")))), testAgent && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      width: '90%',
+      maxWidth: '580px',
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 2px 0',
+      fontSize: '16px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\u25B6 \u72EC\u7ACB\u6D4B\u8BD5 Agent: ", testAgent.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, "\u6A21\u578B: ", testAgent.primary_model_id, " \xB7 \u6A21\u5F0F: ", testAgent.permission_level)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setTestAgent(null),
+    style: {
+      background: 'none',
+      border: 'none',
+      color: textSub,
+      fontSize: '18px',
+      cursor: 'pointer'
+    }
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u6D4B\u8BD5\u4EFB\u52A1\u76EE\u6807 (Input Prompt)"), /*#__PURE__*/React.createElement("textarea", {
+    rows: 3,
+    value: testPrompt,
+    onChange: e => setTestPrompt(e.target.value),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain,
+      fontSize: '13px'
+    }
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: testLoading,
+    onClick: handleRunTest,
+    style: {
+      padding: '10px 16px',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#238636',
+      color: '#fff',
+      fontWeight: '600',
+      cursor: testLoading ? 'wait' : 'pointer'
+    }
+  }, testLoading ? '正在执行推理与独立验证...' : '⚡ 发起隔离测试'), testResult && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? '#0d1117' : '#f6f8fa',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '8px',
+      padding: '12px',
+      fontSize: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "\u2713 \u72EC\u7ACB\u6838\u9A8C\u901A\u8FC7"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: textSub
+    }
+  }, "\u8017\u65F6: ", testResult.latency_ms, "ms \xB7 \u6D88\u8017: ", testResult.tokens_used, " tok")), /*#__PURE__*/React.createElement("pre", {
+    style: {
+      margin: 0,
+      whiteSpace: 'pre-wrap',
+      color: textMain,
+      fontFamily: 'monospace',
+      maxHeight: '160px',
+      overflowY: 'auto'
+    }
+  }, testResult.output)))));
+};
+
+// ===== components/ModelCenter.tsx =====
+
+const ModelCenter = ({
+  isDark = true
+}) => {
+  const [models, setModels] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [routingPolicy, setRoutingPolicy] = useState({
+    mode: 'auto_complexity',
+    manual_model_id: 'deepseek-chat',
+    cost_threshold_usd_per_m: 1.0,
+    fallback_model_id: 'qwen-plus'
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Add Model Modal State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({
+    provider_type: 'deepseek',
+    model_id: '',
+    display_name: '',
+    api_base: '',
+    api_key: ''
+  });
+
+  // Ping Testing State
+  const [pingTesting, setPingTesting] = useState(false);
+  const [pingResult, setPingResult] = useState(null);
+  const fetchModels = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/models`);
+      if (res.ok) setModels(await res.json());
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchProviders = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/models/providers`);
+      if (res.ok) setProviders(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const fetchPolicy = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/models/routing/policy`);
+      if (res.ok) setRoutingPolicy(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
+    fetchModels();
+    fetchProviders();
+    fetchPolicy();
+  }, []);
+  const handleProviderSelect = ptype => {
+    const p = providers.find(item => item.provider_type === ptype);
+    if (p) {
+      setAddForm(prev => ({
+        ...prev,
+        provider_type: ptype,
+        api_base: p.default_api_base,
+        model_id: p.recommended_models[0] || '',
+        display_name: `${p.display_name} - ${p.recommended_models[0] || 'Model'}`
+      }));
+    }
+  };
+  const handleTestConnection = async () => {
+    try {
+      setPingTesting(true);
+      setPingResult(null);
+      const res = await fetch(`${API_BASE}/api/models/test-connection`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          provider_type: addForm.provider_type,
+          api_base: addForm.api_base,
+          api_key: addForm.api_key || 'mock-key',
+          model_id: addForm.model_id
+        })
+      });
+      const data = await res.json();
+      setPingResult(data);
+    } catch (err) {
+      setPingResult({
+        ok: false,
+        error: err.message
+      });
+    } finally {
+      setPingTesting(false);
+    }
+  };
+  const handleAddModelSubmit = async () => {
+    if (!addForm.model_id || !addForm.api_key) {
+      alert('请填写模型 ID 与 API Key');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/models`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(addForm)
+      });
+      if (res.ok) {
+        setShowAddModal(false);
+        fetchModels();
+      } else {
+        const err = await res.json();
+        alert(`添加失败: ${err.detail || '未知异常'}`);
+      }
+    } catch (err) {
+      alert(`网络错误: ${err.message}`);
+    }
+  };
+  const handleSavePolicy = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/models/routing/policy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(routingPolicy)
+      });
+      if (res.ok) {
+        alert('智能路由策略已成功保存并实时生效！');
+      }
+    } catch (err) {
+      alert(`保存失败: ${err.message}`);
+    }
+  };
+  const cardBg = isDark ? '#161b22' : '#ffffff';
+  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
+  const textSub = isDark ? '#8b949e' : '#86868b';
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: '0 0 4px 0',
+      fontSize: '20px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\uD83C\uDF10 \u6A21\u578B\u63A5\u5165\u4E0E\u7BA1\u7406\u4E2D\u5FC3"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      color: textSub
+    }
+  }, "\u4E3B\u6D41\u670D\u52A1\u5546\u63D2\u4EF6\u5316\u9884\u8BBE \xB7 \u79D8\u94A5\u8131\u654F\u9632\u62A4 \xB7 \u5EF6\u8FDF\u6D4B\u901F \xB7 \u4E0A\u4E0B\u6587\u53C2\u6570 \xB7 \u667A\u80FD\u591A\u7EA7\u8DEF\u7531")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setShowAddModal(true);
+      handleProviderSelect('deepseek');
+    },
+    style: {
+      padding: '10px 18px',
+      borderRadius: '10px',
+      border: 'none',
+      background: '#238636',
+      color: '#ffffff',
+      fontWeight: '600',
+      fontSize: '13px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "+"), " \u63A5\u5165\u65B0\u6A21\u578B\u670D\u52A1\u5546")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '18px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 12px 0',
+      fontSize: '14px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83E\uDDE9 \u652F\u6301\u7684\u5B98\u65B9\u6A21\u578B\u670D\u52A1\u5546\u9884\u8BBE"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+      gap: '10px'
+    }
+  }, providers.map(p => /*#__PURE__*/React.createElement("div", {
+    key: p.provider_type,
+    onClick: () => {
+      setShowAddModal(true);
+      handleProviderSelect(p.provider_type);
+    },
+    style: {
+      padding: '12px',
+      borderRadius: '10px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#f9fafb',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      transition: 'border-color 0.2s'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '22px'
+    }
+  }, p.icon), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, p.display_name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub
+    }
+  }, p.recommended_models.length, " \u4E2A\u63A8\u8350\u6A21\u578B")))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83C\uDFAF \u667A\u80FD\u6A21\u578B\u8DEF\u7531\u7B56\u7565 (Smart Routing Engine)"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleSavePolicy,
+    style: {
+      padding: '6px 14px',
+      borderRadius: '6px',
+      border: 'none',
+      background: '#58a6ff',
+      color: '#fff',
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\u4FDD\u5B58\u7B56\u7565")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: () => setRoutingPolicy({
+      ...routingPolicy,
+      mode: 'auto_complexity'
+    }),
+    style: {
+      padding: '14px',
+      borderRadius: '10px',
+      border: `1px solid ${routingPolicy.mode === 'auto_complexity' ? '#58a6ff' : borderCol}`,
+      background: routingPolicy.mode === 'auto_complexity' ? 'rgba(56, 139, 253, 0.12)' : isDark ? '#0d1117' : '#f9fafb',
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '700',
+      color: textMain,
+      marginBottom: '4px'
+    }
+  }, "\uD83E\uDD16 \u590D\u6742\u5EA6\u81EA\u9002\u5E94 (\u63A8\u8350)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u7B80\u5355\u4EFB\u52A1\u9009\u4F4E\u4EF7\u5FEB\u901F\u6A21\u578B\uFF1B\u590D\u6742\u67B6\u6784\u6216\u591A\u8F6E\u63A8\u7406\u81EA\u52A8\u8DEF\u7531\u81F3 DeepSeek R1 / Qwen Max\u3002")), /*#__PURE__*/React.createElement("div", {
+    onClick: () => setRoutingPolicy({
+      ...routingPolicy,
+      mode: 'cost_optimized'
+    }),
+    style: {
+      padding: '14px',
+      borderRadius: '10px',
+      border: `1px solid ${routingPolicy.mode === 'cost_optimized' ? '#58a6ff' : borderCol}`,
+      background: routingPolicy.mode === 'cost_optimized' ? 'rgba(56, 139, 253, 0.12)' : isDark ? '#0d1117' : '#f9fafb',
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '700',
+      color: textMain,
+      marginBottom: '4px'
+    }
+  }, "\uD83D\uDCB0 \u6210\u672C\u4F18\u5148\u6A21\u5F0F"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u5728\u6EE1\u8DB3\u8D28\u91CF\u9608\u503C\u524D\u63D0\u4E0B\uFF0C\u4F18\u5148\u9009\u53D6\u5355\u4EF7\u6700\u4F4E\u6A21\u578B (\u5982 DeepSeek V3 $0.14/M \u6216\u672C\u5730 Ollama $0)\u3002")), /*#__PURE__*/React.createElement("div", {
+    onClick: () => setRoutingPolicy({
+      ...routingPolicy,
+      mode: 'manual'
+    }),
+    style: {
+      padding: '14px',
+      borderRadius: '10px',
+      border: `1px solid ${routingPolicy.mode === 'manual' ? '#58a6ff' : borderCol}`,
+      background: routingPolicy.mode === 'manual' ? 'rgba(56, 139, 253, 0.12)' : isDark ? '#0d1117' : '#f9fafb',
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '700',
+      color: textMain,
+      marginBottom: '4px'
+    }
+  }, "\u2699\uFE0F \u624B\u52A8\u6307\u5B9A\u6A21\u578B"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u56FA\u5B9A\u7531\u7279\u5B9A\u6A21\u578B\u627F\u63FD\u6240\u6709\u5206\u53D1\u5B50\u4EFB\u52A1\u3002")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83D\uDCCB \u5DF2\u63A5\u5165\u8FD0\u884C\u7684\u6A21\u578B\u5217\u8868 (", models.length, ")")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '13px',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      color: textSub,
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px'
+    }
+  }, "\u6A21\u578B ID / \u670D\u52A1\u5546"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "API \u7AEF\u70B9\u4E0E\u51ED\u8BC1"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u8FDE\u901A\u5EF6\u8FDF"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u80FD\u529B\u7279\u6027"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u4E0A\u4E0B\u6587\u7A97\u53E3"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u8D39\u7387 (\u8F93\u5165 / \u8F93\u51FA)"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px',
+      textAlign: 'right'
+    }
+  }, "\u72B6\u6001"))), /*#__PURE__*/React.createElement("tbody", null, models.map(m => /*#__PURE__*/React.createElement("tr", {
+    key: m.model_id,
+    style: {
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: '600',
+      color: textMain
+    }
+  }, m.display_name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      fontFamily: 'monospace'
+    }
+  }, m.model_id)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      maxWidth: '200px'
+    }
+  }, m.api_base), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: '#58a6ff',
+      fontFamily: 'monospace'
+    }
+  }, m.credential_ref)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: '#3fb950',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#3fb950'
+    }
+  }), m.last_ping_ms, "ms")), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '4px',
+      flexWrap: 'wrap'
+    }
+  }, m.capabilities.supports_tools && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      padding: '1px 5px',
+      borderRadius: '4px',
+      background: 'rgba(56, 139, 253, 0.15)',
+      color: '#58a6ff'
+    }
+  }, "Tools"), m.capabilities.supports_reasoning && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      padding: '1px 5px',
+      borderRadius: '4px',
+      background: 'rgba(188, 140, 255, 0.15)',
+      color: '#bc8cff'
+    }
+  }, "Reasoner"), m.capabilities.supports_vision && /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      padding: '1px 5px',
+      borderRadius: '4px',
+      background: 'rgba(63, 185, 80, 0.15)',
+      color: '#3fb950'
+    }
+  }, "Vision"))), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textMain,
+      fontWeight: '500'
+    }
+  }, (m.capabilities.context_window / 1000).toFixed(0), "k tokens"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textSub
+    }
+  }, "$", m.pricing.input_price_per_m, " / $", m.pricing.output_price_per_m, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px'
+    }
+  }, "/ 1M")), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 8px',
+      borderRadius: '10px',
+      background: m.enabled ? 'rgba(63, 185, 80, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+      color: m.enabled ? '#3fb950' : '#f85149',
+      fontWeight: '600'
+    }
+  }, m.enabled ? '已启用' : '未就绪')))))))), showAddModal && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      width: '90%',
+      maxWidth: '580px',
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '17px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\uD83C\uDF10 \u63A5\u5165\u65B0\u5927\u6A21\u578B\u670D\u52A1\u5546"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAddModal(false),
+    style: {
+      background: 'none',
+      border: 'none',
+      color: textSub,
+      fontSize: '18px',
+      cursor: 'pointer'
+    }
+  }, "\u2715")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u9009\u62E9\u670D\u52A1\u5546\u7C7B\u578B"), /*#__PURE__*/React.createElement("select", {
+    value: addForm.provider_type,
+    onChange: e => handleProviderSelect(e.target.value),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  }, providers.map(p => /*#__PURE__*/React.createElement("option", {
+    key: p.provider_type,
+    value: p.provider_type
+  }, p.display_name)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u6A21\u578B ID"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "deepseek-chat",
+    value: addForm.model_id,
+    onChange: e => setAddForm({
+      ...addForm,
+      model_id: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "\u663E\u793A\u540D\u79F0"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "DeepSeek V3",
+    value: addForm.display_name,
+    onChange: e => setAddForm({
+      ...addForm,
+      display_name: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "API \u7AEF\u70B9 URL (API Base)"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: addForm.api_base,
+    onChange: e => setAddForm({
+      ...addForm,
+      api_base: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      display: 'block',
+      marginBottom: '4px'
+    }
+  }, "API Key (\u5B58\u5165\u53D7\u4FDD\u62A4 Secret Store\uFF0C\u524D\u7AEF\u8131\u654F\u4E0D\u56DE\u663E\u660E\u6587)"), /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    placeholder: "sk-...",
+    value: addForm.api_key,
+    onChange: e => setAddForm({
+      ...addForm,
+      api_key: e.target.value
+    }),
+    style: {
+      width: '100%',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    disabled: pingTesting,
+    onClick: handleTestConnection,
+    style: {
+      padding: '8px 14px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: '#58a6ff',
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: pingTesting ? 'wait' : 'pointer'
+    }
+  }, pingTesting ? '正在探测连通性...' : '⚡ 测速与连接测试')), pingResult && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: pingResult.ok ? 'rgba(63, 185, 80, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+      border: `1px solid ${pingResult.ok ? '#3fb950' : '#ef4444'}`,
+      borderRadius: '8px',
+      padding: '10px 14px',
+      fontSize: '12px',
+      color: pingResult.ok ? '#3fb950' : '#ef4444'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, pingResult.ok ? '✓ 连接成功' : '✕ 连接失败', ":"), " ", pingResult.message || pingResult.error), pingResult.reported_models && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      marginTop: '4px',
+      color: textSub
+    }
+  }, "\u63A2\u6D4B\u5230\u53EF\u7528\u6A21\u578B: ", pingResult.reported_models.join(', '))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '10px',
+      marginTop: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowAddModal(false),
+    style: {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: cardBg,
+      color: textSub,
+      cursor: 'pointer'
+    }
+  }, "\u53D6\u6D88"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleAddModelSubmit,
+    style: {
+      padding: '8px 20px',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#238636',
+      color: '#fff',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\u4FDD\u5B58\u6A21\u578B\u63A5\u5165")))));
+};
+
+// ===== components/UsageCenter.tsx =====
+
+const UsageCenter = ({
+  isDark = true
+}) => {
+  const [summary, setSummary] = useState(null);
+  const [rankings, setRankings] = useState([]);
+  const [modelCosts, setModelCosts] = useState([]);
+  const [taskAudits, setTaskAudits] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [activeSubTab, setActiveSubTab] = useState('agents');
+  const [budgetStatus, setBudgetStatus] = useState(null);
+  const fetchAllUsage = async () => {
+    try {
+      const [rSum, rRank, rMod, rAud, rRec, rBud] = await Promise.all([fetch(`${API_BASE}/api/usage/summary`), fetch(`${API_BASE}/api/usage/by-agent`), fetch(`${API_BASE}/api/usage/by-model`), fetch(`${API_BASE}/api/usage/task-audits`), fetch(`${API_BASE}/api/usage/records?limit=25`), fetch(`${API_BASE}/api/usage/budget/check`)]);
+      if (rSum.ok) setSummary(await rSum.json());
+      if (rRank.ok) setRankings(await rRank.json());
+      if (rMod.ok) setModelCosts(await rMod.json());
+      if (rAud.ok) setTaskAudits(await rAud.json());
+      if (rRec.ok) setRecords(await rRec.json());
+      if (rBud.ok) setBudgetStatus(await rBud.json());
+    } catch (err) {
+      console.error('Failed to load usage data', err);
+    }
+  };
+  useEffect(() => {
+    fetchAllUsage();
+  }, []);
+  const cardBg = isDark ? '#161b22' : '#ffffff';
+  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
+  const textSub = isDark ? '#8b949e' : '#86868b';
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: '0 0 4px 0',
+      fontSize: '20px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\uD83D\uDCCA Token \u4E0E\u6210\u672C\u76D1\u63A7\u4E2D\u5FC3"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      color: textSub
+    }
+  }, "\u771F\u5B9E vs \u4F30\u7B97\u4E25\u683C\u5206\u8F68 \xB7 5\u7EF4\u7A7F\u900F\u62A5\u8868 \xB7 \u4EFB\u52A1\u91CD\u8BD5\u6EA2\u4EF7\u5BA1\u8BA1 \xB7 \u591A\u5C42\u7EA7\u9884\u7B97\u7194\u65AD")), /*#__PURE__*/React.createElement("button", {
+    onClick: fetchAllUsage,
+    style: {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      color: '#58a6ff',
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\uD83D\uDD04 \u5B9E\u65F6\u5237\u65B0\u5BF9\u8D26")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? 'rgba(63, 185, 80, 0.08)' : 'rgba(52, 199, 89, 0.08)',
+      border: '1px solid rgba(63, 185, 80, 0.25)',
+      borderRadius: '12px',
+      padding: '14px 20px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '18px'
+    }
+  }, "\uD83D\uDEE1\uFE0F"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\u5DE5\u7A0B\u7EA7\u771F\u5B9E Token \u5BA1\u8BA1\u4FDD\u969C\u4F53\u7CFB (RFC 8785 \u7B7E\u540D\u4FDD\u62A4)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\u672C\u7CFB\u7EDF\u4E25\u683C\u533A\u5206 ", /*#__PURE__*/React.createElement("strong", null, "Provider \u5B98\u65B9\u56DE\u4F20 (`provider_reported`)"), " \u4E0E\u5B57\u7B26\u4F30\u7B97\u503C (`estimated`)\uFF0C\u675C\u7EDD\u5047\u6570\u636E\u6DF7\u5165\u8BA1\u8D39\u62A5\u8868\u3002"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      padding: '4px 10px',
+      borderRadius: '6px',
+      background: 'rgba(63, 185, 80, 0.2)',
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "\u2713 \u771F\u5B9E\u7528\u91CF: ", summary?.real_tokens_pct || 100, "%"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      padding: '4px 10px',
+      borderRadius: '6px',
+      background: 'rgba(210, 153, 34, 0.2)',
+      color: '#d29922',
+      fontWeight: '600'
+    }
+  }, "\u4F30\u7B97\u7528\u91CF: ", summary?.estimated_tokens_pct || 0, "%"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '18px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '6px'
+    }
+  }, "\u4ECA\u65E5\u6D88\u8017 Token"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '26px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.02em'
+    }
+  }, ((summary?.today_tokens || 0) / 1000).toFixed(1), "k"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      marginTop: '4px'
+    }
+  }, "\u5168\u7CFB\u7EDF\u6240\u6709 Agent \u6C47\u603B")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '18px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '6px'
+    }
+  }, "\u4ECA\u65E5\u9884\u4F30\u8D39\u7528"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '26px',
+      fontWeight: '700',
+      color: '#3fb950',
+      letterSpacing: '-0.02em'
+    }
+  }, "$", (summary?.today_cost_usd || 0).toFixed(2)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      marginTop: '4px'
+    }
+  }, "\u6309\u670D\u52A1\u5546\u8D39\u7387\u6838\u7B97 (\u7EA6 \xA5", ((summary?.today_cost_usd || 0) * 7.25).toFixed(2), ")")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '18px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '6px'
+    }
+  }, "\u6267\u884C\u4EFB\u52A1\u6570"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '26px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.02em'
+    }
+  }, summary?.today_tasks_count || 0), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      marginTop: '4px'
+    }
+  }, "\u771F\u5B9E\u4EFB\u52A1\u5B9E\u4F8B")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '14px',
+      padding: '18px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '6px'
+    }
+  }, "\u5355\u4EFB\u52A1\u5E73\u5747\u6D88\u8017"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '26px',
+      fontWeight: '700',
+      color: textMain,
+      letterSpacing: '-0.02em'
+    }
+  }, ((summary?.avg_tokens_per_task || 0) / 1000).toFixed(1), "k"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      marginTop: '4px'
+    }
+  }, "Tokens / Task"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '8px',
+      borderBottom: `1px solid ${borderCol}`,
+      paddingBottom: '12px',
+      overflowX: 'auto'
+    }
+  }, [{
+    key: 'agents',
+    label: '🤖 Agent 消耗排行'
+  }, {
+    key: 'models',
+    label: '🌐 模型费用分布'
+  }, {
+    key: 'retries',
+    label: '⚠️ 重试溢价审计'
+  }, {
+    key: 'records',
+    label: '📋 明细流水对账'
+  }, {
+    key: 'budget',
+    label: '🛡️ 预算熔断策略'
+  }].map(tab => /*#__PURE__*/React.createElement("button", {
+    key: tab.key,
+    onClick: () => setActiveSubTab(tab.key),
+    style: {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: 'none',
+      background: activeSubTab === tab.key ? '#58a6ff' : isDark ? '#161b22' : 'rgba(0,0,0,0.04)',
+      color: activeSubTab === tab.key ? '#ffffff' : textSub,
+      fontSize: '13px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      whiteSpace: 'nowrap'
+    }
+  }, tab.label))), activeSubTab === 'agents' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "Agent \u7D2F\u8BA1\u6D88\u8017\u4E0E\u4EA7\u51FA\u6027\u4EF7\u6BD4\u6392\u884C\u699C")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '13px',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      color: textSub,
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px'
+    }
+  }, "\u6392\u540D / Agent"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u603B\u6D88\u8017 Tokens"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u9884\u4F30\u6210\u672C (USD)"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u6267\u884C\u4EFB\u52A1\u6570"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u5E73\u5747\u6D88\u8017 / \u4EFB\u52A1"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px',
+      textAlign: 'right'
+    }
+  }, "\u6548\u7387\u8BC4\u5206"))), /*#__PURE__*/React.createElement("tbody", null, rankings.map((r, i) => /*#__PURE__*/React.createElement("tr", {
+    key: r.agent_id,
+    style: {
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '20px',
+      height: '20px',
+      borderRadius: '50%',
+      background: i === 0 ? 'rgba(210, 153, 34, 0.2)' : 'rgba(255,255,255,0.06)',
+      color: i === 0 ? '#d29922' : textSub,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '11px',
+      fontWeight: '700'
+    }
+  }, i + 1), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: '600',
+      color: textMain
+    }
+  }, r.agent_name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      color: textSub,
+      fontFamily: 'monospace'
+    }
+  }, r.agent_id))), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, r.total_tokens.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: '#3fb950',
+      fontWeight: '500'
+    }
+  }, "$", r.total_cost_usd.toFixed(4)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textMain
+    }
+  }, r.task_count, " \u6B21"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textSub
+    }
+  }, r.avg_tokens_per_task.toLocaleString(), " tok"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      padding: '2px 8px',
+      borderRadius: '6px',
+      background: 'rgba(63, 185, 80, 0.15)',
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, (r.efficiency_score * 100).toFixed(0), "\u5206")))))))), activeSubTab === 'models' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\u5927\u6A21\u578B\u8D39\u7528\u5360\u6BD4\u4E0E\u8C03\u7528\u89C4\u6A21\u5206\u5E03")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '13px',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      color: textSub,
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px'
+    }
+  }, "\u6A21\u578B ID"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u670D\u52A1\u5546"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u603B\u6D88\u8017 Tokens"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u9884\u4F30\u6210\u672C (USD)"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px',
+      textAlign: 'right'
+    }
+  }, "\u8D39\u7528\u5360\u6BD4"))), /*#__PURE__*/React.createElement("tbody", null, modelCosts.map(m => /*#__PURE__*/React.createElement("tr", {
+    key: m.model_id,
+    style: {
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, m.model_id), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: '#58a6ff'
+    }
+  }, m.provider_id), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textMain
+    }
+  }, m.total_tokens.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: '#3fb950',
+      fontWeight: '500'
+    }
+  }, "$", m.cost_usd.toFixed(4)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: '80px',
+      height: '6px',
+      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+      borderRadius: '3px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${m.share_pct}%`,
+      height: '100%',
+      background: '#58a6ff',
+      borderRadius: '3px'
+    }
+  })), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, m.share_pct, "%"))))))))), activeSubTab === 'retries' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\u26A0\uFE0F \u4EFB\u52A1\u91CD\u8BD5\u81A8\u80C0\u5BA1\u8BA1 (\u8BC6\u522B\u56E0\u91CD\u8BD5\u6D6A\u8D39\u7684\u6210\u672C)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '13px',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      color: textSub,
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px'
+    }
+  }, "\u4EFB\u52A1 ID"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u603B\u6D88\u8017 Tokens"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u91CD\u8BD5\u6D88\u8017 Tokens"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u603B\u6210\u672C (USD)"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px',
+      textAlign: 'right'
+    }
+  }, "\u91CD\u8BD5\u989D\u5916\u6EA2\u4EF7\u5360\u6BD4"))), /*#__PURE__*/React.createElement("tbody", null, taskAudits.map(t => /*#__PURE__*/React.createElement("tr", {
+    key: t.task_id,
+    style: {
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      fontFamily: 'monospace',
+      color: textMain,
+      fontWeight: '600'
+    }
+  }, t.task_id), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textMain
+    }
+  }, t.total_tokens.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: t.retry_tokens > 0 ? '#f85149' : textSub
+    }
+  }, t.retry_tokens.toLocaleString()), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: '#3fb950'
+    }
+  }, "$", t.total_cost_usd.toFixed(4)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 8px',
+      borderRadius: '6px',
+      background: t.retry_overhead_pct > 0 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(63, 185, 80, 0.15)',
+      color: t.retry_overhead_pct > 0 ? '#f85149' : '#3fb950',
+      fontWeight: '600'
+    }
+  }, t.retry_overhead_pct, "%")))))))), activeSubTab === 'records' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83D\uDCCB \u5B9E\u65F6 Token \u6D41\u6C34\u8D26\u672C (\u6700\u8FD1 25 \u6761)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '12px',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      color: textSub,
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 14px'
+    }
+  }, "\u6D41\u6C34\u53F7 / \u4EFB\u52A1"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "Agent"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "\u6A21\u578B"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "Input"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "Output"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "Cached"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "Reasoning"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "\u603B Tokens"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 12px'
+    }
+  }, "\u8D39\u7528"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '10px 14px',
+      textAlign: 'right'
+    }
+  }, "\u53E3\u5F84\u6765\u6E90"))), /*#__PURE__*/React.createElement("tbody", null, records.map(rec => /*#__PURE__*/React.createElement("tr", {
+    key: rec.record_id,
+    style: {
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 14px',
+      fontFamily: 'monospace'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: textMain,
+      fontWeight: '600'
+    }
+  }, rec.task_id), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '10px',
+      color: textSub
+    }
+  }, rec.record_id)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: '#58a6ff'
+    }
+  }, rec.agent_id), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: textMain
+    }
+  }, rec.model_id), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: textSub
+    }
+  }, rec.prompt_tokens), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: textSub
+    }
+  }, rec.completion_tokens), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: textSub
+    }
+  }, rec.cached_tokens), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: textSub
+    }
+  }, rec.reasoning_tokens), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, rec.total_tokens), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 12px',
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "$", rec.cost_usd.toFixed(4)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '10px 14px',
+      textAlign: 'right'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      padding: '1px 6px',
+      borderRadius: '4px',
+      background: rec.usage_source === 'provider_reported' ? 'rgba(63, 185, 80, 0.15)' : 'rgba(56, 139, 253, 0.15)',
+      color: rec.usage_source === 'provider_reported' ? '#3fb950' : '#58a6ff',
+      fontWeight: '600'
+    }
+  }, rec.usage_source)))))))), activeSubTab === 'budget' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 14px 0',
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83D\uDEE1\uFE0F \u5206\u5C42\u9884\u7B97\u63A7\u5236\u53F0 (\u5F3A\u5236\u6027 B0 \u534F\u8BAE\u7EA6\u675F)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: '0 0 16px 0',
+      fontSize: '13px',
+      color: textSub,
+      lineHeight: 1.5
+    }
+  }, "\u9884\u7B97\u63A7\u5236\u4E0D\u4EC5\u4EC5\u662F\u524D\u7AEF\u544A\u8B66\u3002\u6240\u6709\u9650\u5236\u5747\u4E0B\u6C89\u81F3\u540E\u7AEF B0 \u72B6\u6001\u673A\u4E0E B1 \u6267\u884C\u5F15\u64CE\uFF0C\u4E00\u65E6\u8FBE\u5230 100% \u9608\u503C\u7ACB\u5373\u5F3A\u5236\u963B\u65AD\uFF0C\u907F\u514D\u5929\u4EF7\u8D26\u5355\u3002"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? '#0d1117' : '#f9fafb',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '12px',
+      padding: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '700',
+      color: textMain,
+      marginBottom: '6px'
+    }
+  }, "\u6BCF\u65E5\u5168\u5C40\u9884\u7B97 (Daily Global)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '10px'
+    }
+  }, "\u4E0A\u9650: 1,000,000 Tokens \xB7 \u544A\u8B66\u7EBF: 80%"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "\u7194\u65AD\u884C\u4E3A: BLOCK (\u76F4\u63A5\u963B\u65AD\u65B0\u4EFB\u52A1\u63D0\u4EA4)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? '#0d1117' : '#f9fafb',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '12px',
+      padding: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '700',
+      color: textMain,
+      marginBottom: '6px'
+    }
+  }, "\u5355\u4EFB\u52A1\u9884\u7B97 (Per-Task SLA)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '10px'
+    }
+  }, "\u4E0A\u9650: 100,000 Tokens \xB7 \u544A\u8B66\u7EBF: 80%"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: '#58a6ff',
+      fontWeight: '600'
+    }
+  }, "\u7194\u65AD\u884C\u4E3A: DEGRADE (\u81EA\u52A8\u964D\u7EA7\u81F3\u4F4E\u6210\u672C\u6A21\u578B)")))));
+};
+
 // ===== App.tsx =====
 
-const VALID_TABS = ['tasks', 'dag', 'benchmark', 'evolution', 'memory', 'agents'];
+const VALID_TABS = ['dashboard', 'agents', 'models', 'usage', 'tasks', 'dag', 'benchmark', 'evolution', 'memory'];
 const App = () => {
-  const [activeTab, setActiveTab] = useState('tasks');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [isServerOnline, setIsServerOnline] = useState(null);
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('nexus_theme');
+    return saved !== null ? saved === 'dark' : true; // Default dark tech obsidian
+  });
 
-  // Sync with URL Hash routing (Multi-route support)
+  // Sync with URL Hash routing
   useEffect(() => {
     const handleHashChange = () => {
       const rawHash = window.location.hash.replace('#/', '').replace('#', '');
@@ -2307,85 +5818,243 @@ const App = () => {
         setActiveTab(rawHash);
       }
     };
-
-    // Initial check
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
   const handleTabClick = tab => {
-    setActiveTab(tab);
-    window.location.hash = `#/${tab}`;
+    if (VALID_TABS.includes(tab)) {
+      setActiveTab(tab);
+      window.location.hash = `#/${tab}`;
+    }
+  };
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    localStorage.setItem('nexus_theme', next ? 'dark' : 'light');
   };
   useEffect(() => {
     fetch('http://127.0.0.1:8000/health').then(res => setIsServerOnline(res.ok)).catch(() => setIsServerOnline(false));
   }, []);
-  const navItems = [{
-    key: 'tasks',
-    label: '📝 任务编排与实时流'
+  const navSections = [{
+    title: 'MAIN WORKSPACE',
+    items: [{
+      key: 'dashboard',
+      label: '📊 控制台总览',
+      desc: 'KPI / 遥测 / 快捷通道'
+    }, {
+      key: 'agents',
+      label: '🤖 Agent 管理中心',
+      desc: '可视化向导 / 模板 / 启停'
+    }, {
+      key: 'models',
+      label: '🌐 模型接入中心',
+      desc: '多服务商 / 测速 / 路由'
+    }, {
+      key: 'usage',
+      label: '📈 Token 成本监控',
+      desc: '真实审计 / 报表 / 预算'
+    }]
   }, {
-    key: 'dag',
-    label: '🕸️ DAG 拓扑全景工作台'
+    title: 'EXECUTION & TOPOLOGY',
+    items: [{
+      key: 'tasks',
+      label: '📝 任务编排与实时流',
+      desc: 'SSE 推流与即时取消'
+    }, {
+      key: 'dag',
+      label: '🕸️ DAG 拓扑工作台',
+      desc: '可拖拽拓扑图与抽屉'
+    }, {
+      key: 'benchmark',
+      label: '🔬 性能对比实验室',
+      desc: '多模型/Agent 竞速收益'
+    }]
   }, {
-    key: 'benchmark',
-    label: '⚖️ A/B 对照基准'
-  }, {
-    key: 'evolution',
-    label: '🧬 M4 自我进化与治理'
-  }, {
-    key: 'memory',
-    label: '🧠 M3 长期记忆库'
-  }, {
-    key: 'agents',
-    label: '🤖 专业 Agent 遥测'
+    title: 'GOVERNANCE & AUDIT',
+    items: [{
+      key: 'evolution',
+      label: '🧬 M4 自主进化与巡检',
+      desc: '沙箱预审 / 审批 / 回滚'
+    }, {
+      key: 'memory',
+      label: '🧠 M3 长期记忆库',
+      desc: 'RCA 归因与混合向量检索'
+    }]
   }];
+
+  // Theme Colors
+  const bgMain = isDark ? '#0d1117' : '#f6f8fa';
+  const sidebarBg = isDark ? '#161b22' : '#ffffff';
+  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
+  const textSub = isDark ? '#8b949e' : '#86868b';
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      minHeight: '100vh',
-      background: 'linear-gradient(180deg, #f5f5f7 0%, #e8ebed 100%)',
-      color: '#1d1d1f',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif'
-    }
-  }, /*#__PURE__*/React.createElement("header", {
-    style: {
-      background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(0,0,0,0.06)',
-      padding: '14px 32px',
       display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      minHeight: '100vh',
+      background: bgMain,
+      color: textMain,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif',
+      transition: 'background 0.2s ease'
+    }
+  }, /*#__PURE__*/React.createElement("aside", {
+    style: {
+      width: '260px',
+      background: sidebarBg,
+      borderRight: `1px solid ${borderCol}`,
+      display: 'flex',
+      flexDirection: 'column',
       position: 'sticky',
       top: 0,
-      zIndex: 100
+      height: '100vh',
+      zIndex: 50,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '20px 24px',
+      borderBottom: `1px solid ${borderCol}`
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'center',
-      gap: '14px'
+      gap: '10px'
     }
-  }, /*#__PURE__*/React.createElement("h1", {
+  }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: '18px',
-      fontWeight: '600',
-      letterSpacing: '-0.02em',
-      margin: 0
+      fontSize: '20px'
     }
-  }, "\u26A1 NEXUS CORE 2.0"), /*#__PURE__*/React.createElement("span", {
+  }, "\u26A1"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '16px',
+      fontWeight: '700',
+      letterSpacing: '-0.02em',
+      color: textMain
+    }
+  }, "NEXUS CORE 2.1"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '11px',
-      fontWeight: '600',
-      padding: '3px 9px',
-      borderRadius: '12px',
-      background: '#e8f2ff',
-      color: '#0071e3'
+      color: '#58a6ff',
+      fontWeight: '600'
     }
-  }, "Production Dashboard (React + TS + Tailwind)")), /*#__PURE__*/React.createElement("div", {
+  }, "CONTROL CENTER")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      overflowY: 'auto',
+      padding: '16px 14px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }
+  }, navSections.map(sec => /*#__PURE__*/React.createElement("div", {
+    key: sec.title
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      fontWeight: '700',
+      color: textSub,
+      letterSpacing: '0.05em',
+      padding: '0 10px 8px 10px'
+    }
+  }, sec.title), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px'
+    }
+  }, sec.items.map(item => {
+    const isActive = activeTab === item.key;
+    return /*#__PURE__*/React.createElement("button", {
+      key: item.key,
+      onClick: () => handleTabClick(item.key),
+      style: {
+        padding: '10px 12px',
+        borderRadius: '10px',
+        border: 'none',
+        background: isActive ? isDark ? 'rgba(56, 139, 253, 0.15)' : 'rgba(0, 113, 227, 0.1)' : 'transparent',
+        color: isActive ? '#58a6ff' : textMain,
+        textAlign: 'left',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+        transition: 'all 0.15s ease'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '13px',
+        fontWeight: isActive ? '700' : '500'
+      }
+    }, item.label), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '11px',
+        color: textSub
+      }
+    }, item.desc));
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderTop: `1px solid ${borderCol}`,
+      fontSize: '11px',
+      color: textSub,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "199 \u9879\u6D4B\u8BD5\u5168\u90E8\u901A\u8FC7"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "\u25CF PROD READY"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("header", {
+    style: {
+      height: '60px',
+      background: isDark ? 'rgba(22, 27, 34, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(16px)',
+      borderBottom: `1px solid ${borderCol}`,
+      padding: '0 32px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 40
+    }
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'center',
-      gap: '12px'
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '600',
+      color: textMain,
+      textTransform: 'capitalize'
+    }
+  }, activeTab), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '2px 8px',
+      borderRadius: '10px',
+      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+      color: textSub
+    }
+  }, "\u53CC\u6A21\u5C31\u7EEA (Web + Desktop)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px'
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -2393,7 +6062,7 @@ const App = () => {
       display: 'flex',
       alignItems: 'center',
       gap: '6px',
-      color: isServerOnline ? '#34c759' : '#ff3b30',
+      color: isServerOnline ? '#3fb950' : '#f85149',
       fontWeight: '500'
     }
   }, /*#__PURE__*/React.createElement("span", {
@@ -2401,47 +6070,41 @@ const App = () => {
       width: '8px',
       height: '8px',
       borderRadius: '50%',
-      background: isServerOnline ? '#34c759' : '#ff3b30'
+      background: isServerOnline ? '#3fb950' : '#f85149'
     }
-  }), isServerOnline ? '主控核心在线 (8000)' : '主控核心未就绪'))), /*#__PURE__*/React.createElement("div", {
+  }), isServerOnline ? '主控服务在线 (:8000)' : '主控服务未连接'), /*#__PURE__*/React.createElement("button", {
+    onClick: toggleTheme,
+    title: "\u5207\u6362\u6DF1\u8272/\u6D45\u8272\u4E3B\u9898",
     style: {
-      maxWidth: '1260px',
-      margin: '20px auto 0',
-      padding: '0 24px'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
+      background: isDark ? '#1f2937' : '#f0f7ff',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '8px',
+      padding: '6px 10px',
+      fontSize: '13px',
+      cursor: 'pointer',
+      color: textMain,
       display: 'flex',
-      gap: '8px',
-      borderBottom: '1px solid rgba(0,0,0,0.06)',
-      paddingBottom: '12px',
-      overflowX: 'auto'
+      alignItems: 'center',
+      gap: '6px'
     }
-  }, navItems.map(item => {
-    const isActive = activeTab === item.key;
-    return /*#__PURE__*/React.createElement("button", {
-      key: item.key,
-      onClick: () => handleTabClick(item.key),
-      style: {
-        padding: '8px 16px',
-        borderRadius: '10px',
-        border: 'none',
-        background: isActive ? '#0071e3' : 'rgba(0,0,0,0.04)',
-        color: isActive ? '#fff' : '#1d1d1f',
-        fontSize: '13px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        whiteSpace: 'nowrap'
-      }
-    }, item.label);
-  }))), /*#__PURE__*/React.createElement("main", {
+  }, /*#__PURE__*/React.createElement("span", null, isDark ? '🌙 深色' : '☀️ 浅色')))), /*#__PURE__*/React.createElement("main", {
     style: {
-      maxWidth: '1260px',
-      margin: '20px auto 60px',
-      padding: '0 24px'
+      flex: 1,
+      padding: '28px 32px',
+      maxWidth: '1440px',
+      width: '100%',
+      boxSizing: 'border-box'
     }
-  }, activeTab === 'tasks' && /*#__PURE__*/React.createElement(TaskWorkspace, null), activeTab === 'dag' && /*#__PURE__*/React.createElement(DAGStudio, null), activeTab === 'benchmark' && /*#__PURE__*/React.createElement(BenchmarkCenter, null), activeTab === 'evolution' && /*#__PURE__*/React.createElement(EvolutionPanel, null), activeTab === 'memory' && /*#__PURE__*/React.createElement(MemoryInspector, null), activeTab === 'agents' && /*#__PURE__*/React.createElement(AgentMatrix, null)));
+  }, activeTab === 'dashboard' && /*#__PURE__*/React.createElement(DashboardOverview, {
+    onNavigate: handleTabClick,
+    isDark: isDark
+  }), activeTab === 'agents' && /*#__PURE__*/React.createElement(AgentCenter, {
+    isDark: isDark
+  }), activeTab === 'models' && /*#__PURE__*/React.createElement(ModelCenter, {
+    isDark: isDark
+  }), activeTab === 'usage' && /*#__PURE__*/React.createElement(UsageCenter, {
+    isDark: isDark
+  }), activeTab === 'tasks' && /*#__PURE__*/React.createElement(TaskWorkspace, null), activeTab === 'dag' && /*#__PURE__*/React.createElement(DAGStudio, null), activeTab === 'benchmark' && /*#__PURE__*/React.createElement(BenchmarkCenter, null), activeTab === 'evolution' && /*#__PURE__*/React.createElement(EvolutionPanel, null), activeTab === 'memory' && /*#__PURE__*/React.createElement(MemoryInspector, null))));
 };
 
 // Mount React root

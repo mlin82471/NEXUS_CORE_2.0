@@ -1,9 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
-title NEXUS CORE 2.0 Launcher
+title NEXUS CORE 2.1 Control Center Launcher
 
 echo ============================================================
-echo   NEXUS CORE 2.0 - Enterprise Multi-Agent Engine Launcher
+echo   NEXUS CORE 2.1 - Control Center & Engine Launcher
 echo ============================================================
 echo.
 

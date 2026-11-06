@@ -11,6 +11,10 @@ const files = [
   'components/EvolutionPanel.tsx',
   'components/MemoryInspector.tsx',
   'components/AgentMatrix.tsx',
+  'components/DashboardOverview.tsx',
+  'components/AgentCenter.tsx',
+  'components/ModelCenter.tsx',
+  'components/UsageCenter.tsx',
   'App.tsx'
 ];
 

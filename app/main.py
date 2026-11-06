@@ -80,7 +80,26 @@ async def lifespan(ap):
     finally:
         sweeper.stop()
 
-app = FastAPI(title="NEXUS CORE 2.0", version="0.1.0-M0A", lifespan=lifespan)
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.agents import router as agents_router
+from app.api.models import router as models_router
+from app.api.usage import router as usage_router
+from app.api.dashboard import router as dashboard_router
+
+app = FastAPI(title="NEXUS CORE 2.1", version="2.1.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(agents_router)
+app.include_router(models_router)
+app.include_router(usage_router)
+app.include_router(dashboard_router)
 
 # ===== Auth =====
 
