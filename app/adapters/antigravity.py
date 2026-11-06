@@ -45,8 +45,10 @@ def _do_antigravity_worker(
         task_goal = context.get("task_goal", "") if context else ""
         workspace = context.get("workspace", os.getcwd()) if context else os.getcwd()
 
-        # If API key is present, perform code analysis/generation via LLM
-        if OpenAI and api_key:
+        is_real_key = bool(api_key and not api_key.startswith("sk-placeholder") and api_key not in ("mock", "test", "none"))
+
+        # If real API key is present, perform code analysis/generation via LLM
+        if OpenAI and is_real_key:
             try:
                 client = OpenAI(
                     api_key=api_key,
@@ -85,11 +87,17 @@ def _do_antigravity_worker(
                     "input_tokens": in_tok,
                     "output_tokens": out_tok,
                     "usage_source": "measured" if usage else "estimated",
+                    "execution_mode": "real",
                 })
                 return
-            except Exception:
-                # Graceful fallback to deterministic engine on connection/timeout issue
-                pass
+            except Exception as e:
+                # Real API execution failure must be accurately reported without masking
+                result_queue.put({
+                    "ok": False,
+                    "error": f"LLM API Execution Failed ({type(e).__name__}): {str(e)}",
+                    "execution_mode": "real",
+                })
+                return
 
         # Fallback deterministic execution if no API key configured (offline safe mode)
         simulated_output = (
@@ -107,6 +115,7 @@ def _do_antigravity_worker(
             "input_tokens": in_tok,
             "output_tokens": out_tok,
             "usage_source": "estimated",
+            "execution_mode": "simulation",
         })
     except Exception as e:
         result_queue.put({"ok": False, "error": f"{type(e).__name__}: {str(e)}"})
@@ -202,6 +211,7 @@ class AntigravityAdapter:
                 input_tokens=data.get("input_tokens", 0),
                 output_tokens=data.get("output_tokens", 0),
                 usage_source=data.get("usage_source", "estimated"),
+                execution_mode=data.get("execution_mode", "real"),
             )
         raise AgentExecutionError(data.get("error", "Unknown Antigravity error"))
 

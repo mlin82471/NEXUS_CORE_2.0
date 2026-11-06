@@ -8,6 +8,7 @@ class AgentResult:
     input_tokens: int
     output_tokens: int
     usage_source: str = "estimated"
+    execution_mode: str = "real"  # "real" | "simulation"
 
 
 class AgentError(Exception):
@@ -21,3 +22,6 @@ class AgentExecutionError(AgentError):
 
 class AgentCancelledError(AgentError):
     """Agent cancelled via cancel_event."""
+
+class ExecutionRejectedError(AgentError):
+    """Raised when simulation output is rejected for tasks requiring real execution."""

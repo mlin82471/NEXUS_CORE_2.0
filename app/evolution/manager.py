@@ -67,7 +67,7 @@ def approve_and_apply(
                 description=after.get("description", ""),
                 capabilities=after.get("capabilities", []),
                 permission_set=after.get("permission_set", []),
-                verification_status="verified",
+                verification_status="provisional",
                 metadata_json={
                     "synthesized_by_proposal": proposal.id,
                     "synthesized_at": datetime.now(timezone.utc).isoformat()
@@ -94,17 +94,17 @@ def approve_and_apply(
         flag_modified(agent, "metadata_json")
 
     elif proposal.proposal_type == "budget_tuning":
-        # Apply runtime budget tuning
+        # Apply runtime budget tuning directly to settings
         after = diff.get("after", {})
         if "default_max_total_tokens" in after:
-            settings.default_token_budget = int(after["default_max_total_tokens"])
+            settings.default_max_total_tokens = int(after["default_max_total_tokens"])
         if "default_max_steps" in after:
-            settings.default_max_subtasks = int(after["default_max_steps"])
+            settings.default_max_steps = int(after["default_max_steps"])
         diff["applied_tuning"] = after
         flag_modified(proposal, "proposed_diff")
 
     elif proposal.proposal_type == "routing_optimization":
-        # Apply routing model optimization
+        # Apply routing model optimization directly to settings
         after = diff.get("after", {})
         if "preferred_model" in after:
             settings.planner_model = str(after["preferred_model"])
@@ -186,9 +186,9 @@ def rollback_proposal(db: Session, proposal_id: str) -> EvolutionProposal:
 
     elif proposal.proposal_type == "budget_tuning" and before:
         if "default_max_total_tokens" in before:
-            settings.default_token_budget = int(before["default_max_total_tokens"])
+            settings.default_max_total_tokens = int(before["default_max_total_tokens"])
         if "default_max_steps" in before:
-            settings.default_max_subtasks = int(before["default_max_steps"])
+            settings.default_max_steps = int(before["default_max_steps"])
 
     elif proposal.proposal_type == "routing_optimization" and before:
         if "preferred_model" in before:

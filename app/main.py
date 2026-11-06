@@ -41,6 +41,10 @@ from app.evolution import (
     sweeper
 )
 from app.services.worker_pool import submit_task_execution, sse_event_stream, cancel_task
+from app.b1.persistence import SQLitePersistence
+from app.b1.budget import SQLiteBudgetTracker
+from app.b1.events import SQLiteEventSystem
+from app.b1.engine import ExecutionEngine
 
 
 @asynccontextmanager
@@ -51,6 +55,24 @@ async def lifespan(ap):
         seed_default_agents(db)
     finally:
         db.close()
+
+    # Startup Crash Recovery: Scan and recover any interrupted tasks
+    try:
+        db_path = settings.database_url.replace("sqlite:///", "")
+        engine_b1 = ExecutionEngine(
+            SQLitePersistence(db_path),
+            SQLiteBudgetTracker(db_path),
+            SQLiteEventSystem(db_path),
+        )
+        recovered = engine_b1.recover_interrupted_tasks()
+        if recovered:
+            logging.getLogger("nexus.main").info(
+                f"Startup crash recovery completed. Recovered {len(recovered)} tasks: {recovered}"
+            )
+    except Exception as exc:
+        logging.getLogger("nexus.main").error(f"Error during startup crash recovery: {exc}")
+
+    # Start Autonomous Evolution Sweeper
     sweeper.set_session_factory(SessionLocal)
     sweeper.start()
     try:

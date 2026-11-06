@@ -585,7 +585,12 @@ class ExecutionEngine:
             # Aggregate and transition terminal state using B0 v7 contract
             updated_subtasks = self.persistence.get_active_subtasks(task.id)
             final_dicts = [
-                {"status": s.status, "acceptance_criteria": s.acceptance_criteria}
+                {
+                    "status": s.status,
+                    "verification_status": s.verification_status,
+                    "is_active": s.is_active,
+                    "acceptance_criteria": s.acceptance_criteria,
+                }
                 for s in updated_subtasks
             ]
             final_status, _ = aggregate_task_status(

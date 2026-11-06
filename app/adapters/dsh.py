@@ -42,8 +42,9 @@ def _do_dsh_worker(
             OpenAI = None
 
         task_goal = context.get("task_goal", "") if context else ""
+        is_real_key = bool(api_key and not api_key.startswith("sk-placeholder") and api_key not in ("mock", "test", "none"))
 
-        if OpenAI and api_key:
+        if OpenAI and is_real_key:
             try:
                 client = OpenAI(
                     api_key=api_key,
@@ -81,10 +82,17 @@ def _do_dsh_worker(
                     "input_tokens": in_tok,
                     "output_tokens": out_tok,
                     "usage_source": "measured" if usage else "estimated",
+                    "execution_mode": "real",
                 })
                 return
-            except Exception:
-                pass
+            except Exception as e:
+                # Real API execution failure must be accurately reported without masking
+                result_queue.put({
+                    "ok": False,
+                    "error": f"LLM API Execution Failed ({type(e).__name__}): {str(e)}",
+                    "execution_mode": "real",
+                })
+                return
 
         # Deterministic offline cluster / shell analyzer
         simulated_output = (
@@ -101,6 +109,7 @@ def _do_dsh_worker(
             "input_tokens": in_tok,
             "output_tokens": out_tok,
             "usage_source": "estimated",
+            "execution_mode": "simulation",
         })
     except Exception as e:
         result_queue.put({"ok": False, "error": f"{type(e).__name__}: {str(e)}"})
@@ -184,6 +193,7 @@ class DSHAdapter:
                 input_tokens=data.get("input_tokens", 0),
                 output_tokens=data.get("output_tokens", 0),
                 usage_source=data.get("usage_source", "estimated"),
+                execution_mode=data.get("execution_mode", "real"),
             )
         raise AgentExecutionError(data.get("error", "Unknown DSH error"))
 

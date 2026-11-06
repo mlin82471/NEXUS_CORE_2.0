@@ -1,12 +1,16 @@
+import argparse
 import os
 import sys
 import zipfile
 from pathlib import Path
 
-def package_project():
+def package_project(output_path: Path | None = None):
     project_root = Path(__file__).resolve().parent.parent
-    desktop_dir = Path("C:/Users/linhr/Desktop")
-    zip_path = desktop_dir / "NEXUS_CORE_2.0_Project.zip"
+    if output_path is None:
+        desktop_dir = Path("C:/Users/linhr/Desktop")
+        zip_path = desktop_dir / "NEXUS_CORE_2.0_Project.zip"
+    else:
+        zip_path = Path(output_path).resolve()
 
     print(f"📦 Packaging project from: {project_root}")
     print(f"🎯 Output ZIP destination: {zip_path}")
@@ -74,4 +78,7 @@ def package_project():
     print(f"📍 Location:    {zip_path}")
 
 if __name__ == "__main__":
-    package_project()
+    parser = argparse.ArgumentParser(description="Package NEXUS CORE 2.0 release archive")
+    parser.add_argument("--output", "-o", type=str, default=None, help="Output zip file path (default: Desktop)")
+    args = parser.parse_args()
+    package_project(args.output)
