@@ -601,7 +601,7 @@ export const App: React.FC = () => {
           {activeTab === 'agents' && <AgentCenter isDark={isDark} />}
           {activeTab === 'models' && <ModelCenter isDark={isDark} />}
           {activeTab === 'usage' && <UsageCenter isDark={isDark} />}
-          {activeTab === 'tasks' && <TaskWorkspace />}
+          {activeTab === 'tasks' && <TaskWorkspace isDark={isDark} />}
           {activeTab === 'dag' && <DAGStudio />}
           {activeTab === 'benchmark' && <BenchmarkCenter />}
           {activeTab === 'evolution' && <EvolutionPanel isDark={isDark} />}

@@ -49,6 +49,16 @@ export interface TaskDetail {
     message: string;
     created_at: string;
   }>;
+  artifacts?: Array<{
+    id: string;
+    name: string;
+    type: 'code' | 'markdown' | 'json' | 'evidence';
+    language?: string;
+    content: string;
+    step_key?: string;
+    creator_agent?: string;
+    verification_passed?: boolean;
+  }>;
 }
 
 export interface EvolutionProposal {
