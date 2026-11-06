@@ -127,6 +127,14 @@ class SQLiteBudgetTracker(BudgetProtocol):
                     f"Reservation not in PENDING status or does not exist: {reservation_id}"
                 )
 
+    def list_pending_reservations(self, task_id: str) -> list[str]:
+        with self._get_conn() as conn:
+            cur = conn.execute(
+                "SELECT reservation_id FROM reservations WHERE task_id = ? AND status = 'PENDING'",
+                (task_id,),
+            )
+            return [row[0] for row in cur.fetchall()]
+
     def remaining_budget(self, task_id: str) -> RemainingBudgetData:
         with self._get_conn() as conn:
             task_row = conn.execute(

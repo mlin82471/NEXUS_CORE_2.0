@@ -87,23 +87,22 @@ class AutonomousEvolutionSweeper:
         # 2. Automatically ensure sandbox verification for each proposal
         for p in proposals:
             if p.status in ("draft", "pending_test"):
-                test_result = verify_proposal_in_sandbox(p)
+                test_result = verify_proposal_in_sandbox(p.proposal_type, p.proposed_diff)
                 p.sandbox_test_result = test_result
-                if test_result.get("test_passed"):
-                    p.status = "pending_approval"
+                if test_result.get("passed", test_result.get("test_passed")):
+                    p.status = "test_passed"
                     verified_count += 1
                     logger.info(f"Sweeper: Proposal #{p.id} passed sandbox verification and queued for human approval.")
                 else:
-                    p.status = "sandbox_failed"
+                    p.status = "test_failed"
                     failed_count += 1
-                    logger.warning(f"Sweeper: Proposal #{p.id} failed sandbox test: {test_result.get('error')}")
+                    logger.warning(f"Sweeper: Proposal #{p.id} failed sandbox test: {test_result.get('summary')}")
+                db.commit()
             elif p.status == "test_passed":
-                p.status = "pending_approval"
                 verified_count += 1
                 logger.info(f"Sweeper: Proposal #{p.id} verified and queued for human approval.")
             elif p.status == "test_failed":
                 failed_count += 1
-                db.commit()
 
         duration = round(time.time() - start_time, 3)
         summary = {

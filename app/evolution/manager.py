@@ -94,12 +94,22 @@ def approve_and_apply(
         flag_modified(agent, "metadata_json")
 
     elif proposal.proposal_type == "budget_tuning":
-        # Record runtime budget tuning in global settings or event log
-        pass
+        # Apply runtime budget tuning
+        after = diff.get("after", {})
+        if "default_max_total_tokens" in after:
+            settings.default_token_budget = int(after["default_max_total_tokens"])
+        if "default_max_steps" in after:
+            settings.default_max_subtasks = int(after["default_max_steps"])
+        diff["applied_tuning"] = after
+        flag_modified(proposal, "proposed_diff")
 
     elif proposal.proposal_type == "routing_optimization":
-        # Record model routing optimization in runtime config
-        pass
+        # Apply routing model optimization
+        after = diff.get("after", {})
+        if "preferred_model" in after:
+            settings.planner_model = str(after["preferred_model"])
+        diff["applied_routing"] = after
+        flag_modified(proposal, "proposed_diff")
 
     # Mark proposal as approved
     proposal.status = "approved"
@@ -173,6 +183,16 @@ def rollback_proposal(db: Session, proposal_id: str) -> EvolutionProposal:
             meta["prompt_version"] = max(1, meta.get("prompt_version", 2) - 1)
             agent.metadata_json = meta
             flag_modified(agent, "metadata_json")
+
+    elif proposal.proposal_type == "budget_tuning" and before:
+        if "default_max_total_tokens" in before:
+            settings.default_token_budget = int(before["default_max_total_tokens"])
+        if "default_max_steps" in before:
+            settings.default_max_subtasks = int(before["default_max_steps"])
+
+    elif proposal.proposal_type == "routing_optimization" and before:
+        if "preferred_model" in before:
+            settings.planner_model = str(before["preferred_model"])
 
     proposal.status = "rolled_back"
     db.commit()

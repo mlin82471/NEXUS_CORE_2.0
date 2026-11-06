@@ -118,6 +118,11 @@ class SQLitePersistence(PersistenceProtocol):
                 return None
             return self._row_to_task(row)
 
+    def get_tasks_by_status(self, status: str) -> list[TaskData]:
+        with self._get_conn() as conn:
+            rows = conn.execute("SELECT * FROM tasks WHERE status = ?", (status,)).fetchall()
+            return [self._row_to_task(r) for r in rows]
+
     def _row_to_task(self, row: sqlite3.Row) -> TaskData:
         return TaskData(
             id=row["id"],

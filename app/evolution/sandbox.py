@@ -10,14 +10,22 @@ from app.schemas import ROLES, AdapterType
 SECURITY_CEILING_PERMISSIONS = {"read_task", "write_task", "run_agent", "call_llm", "execute_step"}
 FORBIDDEN_PERMISSIONS = {"root", "exec_host_sys", "bypass_auth", "drop_db", "escalate_privilege"}
 
-def verify_proposal_in_sandbox(proposal_type: str, proposed_diff: dict) -> Dict[str, Any]:
+def verify_proposal_in_sandbox(proposal_type_or_obj: Any, proposed_diff: dict = None) -> Dict[str, Any]:
     """
     Run multi-stage sandbox verification against a proposal.
+    Accepts either (proposal_type: str, proposed_diff: dict) or an EvolutionProposal object.
     Stages:
       1. Security boundary check (prevents permission escalation or malicious grants)
       2. Schema & integrity validation (checks data types, allowed roles, allowed adapters)
       3. Dry-run simulation (checks runtime usability without modifying live db)
     """
+    if hasattr(proposal_type_or_obj, "proposal_type"):
+        proposal_type = proposal_type_or_obj.proposal_type
+        proposed_diff = proposal_type_or_obj.proposed_diff or {}
+    else:
+        proposal_type = str(proposal_type_or_obj)
+        proposed_diff = proposed_diff or {}
+
     start_time = time.perf_counter()
     checks: List[Dict[str, Any]] = []
 
@@ -50,6 +58,7 @@ def verify_proposal_in_sandbox(proposal_type: str, proposed_diff: dict) -> Dict[
 
     return {
         "passed": all_passed,
+        "test_passed": all_passed,
         "checks": checks,
         "execution_time_s": elapsed,
         "summary": "Sandbox verification passed. Safe for human approval." if all_passed else f"Sandbox verification failed: {sec_detail or schema_detail or sim_detail}"

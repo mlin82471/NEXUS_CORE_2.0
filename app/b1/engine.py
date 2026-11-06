@@ -26,6 +26,7 @@ from app.b0.protocols import (
     TaskData,
 )
 from app.b1.agent_runner import run_agent_safely
+from app.b1.evaluator import IndependentEvaluator
 
 log = logging.getLogger("nexus.b1.engine")
 
@@ -46,10 +47,12 @@ class ExecutionEngine:
         persistence: PersistenceProtocol,
         budget: BudgetProtocol,
         events: EventProtocol,
+        evaluator: IndependentEvaluator | None = None,
     ):
         self.persistence = persistence
         self.budget = budget
         self.events = events
+        self.evaluator = evaluator or IndependentEvaluator()
 
     # -----------------------------------------------------------------------
     # Task Submission & Initialization (B1-1, B1-2)
@@ -403,7 +406,8 @@ class ExecutionEngine:
             usage_source = outcome.usage_source
 
             if usage_source == "unknown":
-                tokens_to_charge = calculate_unknown_charge(reserved_tokens, reserved_tokens // 2)
+                subtask_limit = subtask.token_limit or 50000
+                tokens_to_charge = calculate_unknown_charge(subtask_limit, reserved_tokens)
 
             # Commit budget reservation
             self.budget.commit(
@@ -432,7 +436,7 @@ class ExecutionEngine:
                 )
             )
 
-            # Update subtask
+            # Update subtask result
             self.persistence.record_subtask_result(
                 subtask_id=subtask_id,
                 result_summary=outcome.result,
@@ -443,22 +447,47 @@ class ExecutionEngine:
                 token_usage_source=usage_source,
                 finished_at=_now(),
             )
+
+            # Independent verification pipeline
+            eval_res = self.evaluator.evaluate_subtask(
+                subtask=subtask,
+                result_content=outcome.result,
+                acceptance_criteria=subtask.acceptance_criteria,
+            )
+
             self.persistence.record_subtask_verification(
                 subtask_id=subtask_id,
-                verification_status="passed",
-                verification_notes="Mock verification passed",
+                verification_status=eval_res.status,
+                verification_notes=eval_res.notes,
             )
-            self.persistence.update_subtask_status(subtask_id, "running", "success")
 
-            self.events.write_event(
-                task_id=task_id,
-                event_type="subtask_completed",
-                actor_type="agent",
-                actor_id=selected_agent.id,
-                subtask_id=subtask_id,
-                payload={"tokens_charged": tokens_to_charge},
-            )
-            return "success"
+            if eval_res.status == "passed":
+                self.persistence.update_subtask_status(subtask_id, "running", "success")
+                self.events.write_event(
+                    task_id=task_id,
+                    event_type="subtask_completed",
+                    actor_type="agent",
+                    actor_id=selected_agent.id,
+                    subtask_id=subtask_id,
+                    payload={"tokens_charged": tokens_to_charge, "eval_score": eval_res.score},
+                )
+                return "success"
+            else:
+                self.persistence.update_subtask_status(
+                    subtask_id=subtask_id,
+                    old_status="running",
+                    new_status="failed",
+                    execution_error=f"Independent evaluation failed: {eval_res.notes}",
+                )
+                self.events.write_event(
+                    task_id=task_id,
+                    event_type="subtask_verification_failed",
+                    actor_type="evaluator",
+                    actor_id="independent_evaluator",
+                    subtask_id=subtask_id,
+                    payload={"reason": eval_res.notes, "details": eval_res.details},
+                )
+                return "failed"
 
         elif outcome.status == "cancelled":
             self.budget.release(reservation.reservation_id)
@@ -507,15 +536,72 @@ class ExecutionEngine:
     def recover_interrupted_tasks(self) -> list[str]:
         """
         Scans for tasks in 'running' status after a crash/restart.
-        Marks pending/running subtasks and budget reservations appropriately.
-        Returns list of recovered task IDs.
+        Marks pending/running subtasks as failed with audit trail,
+        releases stranded pending budget reservations,
+        and aggregates deterministic B0 v7 terminal states.
         """
         recovered_ids = []
-        # Query tasks via Persistence or inspection
-        # For tasks left in running:
-        # 1. Any subtask in 'running' -> marked 'failed' (interrupted)
-        # 2. Re-aggregate task status
-        # Note: In SQLite WAL, active transactions rollback on crash automatically.
+        if hasattr(self.persistence, "get_tasks_by_status"):
+            running_tasks = self.persistence.get_tasks_by_status("running")
+        else:
+            running_tasks = []
+
+        for task in running_tasks:
+            active_subtasks = self.persistence.get_active_subtasks(task.id)
+            for sub in active_subtasks:
+                if sub.status in ("running", "pending"):
+                    try:
+                        self.persistence.update_subtask_status(
+                            subtask_id=sub.id,
+                            old_status=sub.status,
+                            new_status="failed",
+                            execution_error="Interrupted by system crash / server restart",
+                        )
+                        self.persistence.record_subtask_verification(
+                            subtask_id=sub.id,
+                            verification_status="failed",
+                            verification_notes="Execution aborted due to unexpected process restart",
+                        )
+                    except Exception as e:
+                        log.warning(f"Error marking subtask {sub.id} failed during recovery: {e}")
+
+            # Release stranded pending reservations if supported
+            if hasattr(self.budget, "list_pending_reservations"):
+                for res_id in self.budget.list_pending_reservations(task.id):
+                    try:
+                        self.budget.release(res_id)
+                    except Exception:
+                        pass
+
+            # Write recovery audit event
+            self.events.write_event(
+                task_id=task.id,
+                event_type="task_crash_recovered",
+                actor_type="system",
+                actor_id="engine_recovery",
+                payload={"recovered_at": _now()},
+            )
+
+            # Aggregate and transition terminal state using B0 v7 contract
+            updated_subtasks = self.persistence.get_active_subtasks(task.id)
+            final_dicts = [
+                {"status": s.status, "acceptance_criteria": s.acceptance_criteria}
+                for s in updated_subtasks
+            ]
+            final_status, _ = aggregate_task_status(
+                active_subtasks=final_dicts,
+                can_replan=False,
+            )
+            self.persistence.update_task_status(task.id, "running", final_status)
+            self.events.write_event(
+                task_id=task.id,
+                event_type=f"task_{final_status}",
+                actor_type="system",
+                actor_id="engine_recovery",
+                payload={"final_status": final_status, "recovered": True},
+            )
+            recovered_ids.append(task.id)
+
         return recovered_ids
 
     # -----------------------------------------------------------------------

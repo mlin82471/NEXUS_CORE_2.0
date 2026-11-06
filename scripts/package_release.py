@@ -31,6 +31,13 @@ def package_project():
         ".sqlite3",
         ".log",
     }
+    EXCLUDE_FILES = {
+        ".env",
+        ".env.local",
+        ".env.production",
+        "b0_v6_test.db",
+        "b0_v7_test.db",
+    }
 
     count = 0
     total_uncompressed = 0
@@ -41,6 +48,9 @@ def package_project():
             dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
 
             for file in files:
+                if file in EXCLUDE_FILES:
+                    continue
+
                 file_path = Path(root) / file
                 suffix = file_path.suffix.lower()
 
