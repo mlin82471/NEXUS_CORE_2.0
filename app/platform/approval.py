@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 from app.platform.policy import RiskLevel, policy_engine
+from app.platform.evidence import evidence_engine
 
 
 class ApprovalStatus(str, Enum):
@@ -62,11 +63,12 @@ class ApprovalGate:
         payload: Dict[str, Any],
         target_path: Optional[str] = None,
         command: Optional[str] = None,
+        risk_level: Optional[RiskLevel] = None,
     ) -> ApprovalRequest:
         """
-        Calculates authoritative risk level and generates an approval request if required.
+        Calculates authoritative risk level (or uses explicit override) and generates an approval request.
         """
-        risk = policy_engine.evaluate_risk(
+        risk = risk_level or policy_engine.evaluate_risk(
             action_type=action_type,
             target_path=target_path,
             command=command,
@@ -118,6 +120,16 @@ class ApprovalGate:
         req.status = ApprovalStatus.APPROVED
         req.approved_by = approver_identity
         req.approval_comment = comment
+
+        # Cryptographically seal approval signature into tamper-proof evidence chain
+        evidence_engine.record_approval_signature(
+            task_id=req.task_id,
+            request_id=req.request_id,
+            action_type=req.action_type,
+            approved_by=approver_identity,
+            status="APPROVED",
+            comment=comment,
+        )
         return req
 
     def reject(
@@ -133,6 +145,16 @@ class ApprovalGate:
         req.status = ApprovalStatus.REJECTED
         req.approved_by = rejector_identity
         req.approval_comment = f"Rejected: {reason}"
+
+        # Cryptographically seal rejection into tamper-proof evidence chain
+        evidence_engine.record_approval_signature(
+            task_id=req.task_id,
+            request_id=req.request_id,
+            action_type=req.action_type,
+            approved_by=rejector_identity,
+            status="REJECTED",
+            comment=reason,
+        )
         return req
 
     def verify_execution_permission(

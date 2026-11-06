@@ -16,6 +16,12 @@ from app.router.metrics import (
     record_agent_execution,
     get_agent_metrics,
 )
+from app.router.workflow_router import (
+    WorkflowDomain,
+    ExecutionTopology,
+    WorkflowRoutingDecision,
+    route_workflow_intent,
+)
 
 __all__ = [
     "TaskComplexity",
@@ -26,4 +32,8 @@ __all__ = [
     "route_model",
     "record_agent_execution",
     "get_agent_metrics",
+    "WorkflowDomain",
+    "ExecutionTopology",
+    "WorkflowRoutingDecision",
+    "route_workflow_intent",
 ]

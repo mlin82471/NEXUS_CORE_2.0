@@ -21,6 +21,7 @@ def package_project(output_path: Path | None = None):
         "__pycache__",
         ".pytest_cache",
         "build",
+        "dist",
         "node_modules",
         ".venv",
         "venv",
@@ -50,7 +51,7 @@ def package_project(output_path: Path | None = None):
     with zipfile.ZipFile(temp_zip, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
         for root, dirs, files in os.walk(project_root):
             # Prune excluded directories
-            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS and not d.endswith(".egg-info")]
 
             for file in files:
                 if file in EXCLUDE_FILES:

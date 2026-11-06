@@ -11,6 +11,7 @@ from enum import Enum
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
 from app.config import settings
+from app.model_hub.router import model_router as model_hub_gateway, ModelHubRouter
 from app.router.classifier import TaskComplexity
 
 
@@ -119,3 +120,7 @@ def route_model(
         reason="Balanced tier for standard analytical tasks.",
         recommended_adapter="hermes" if settings.enable_hermes_adapter else "mock",
     )
+
+
+# Unified Model Gateway Reference
+model_router = model_hub_gateway

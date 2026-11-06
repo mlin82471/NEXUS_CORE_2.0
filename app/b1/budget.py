@@ -9,6 +9,8 @@ from typing import Any
 
 from app.b0.budget import calculate_remaining_budget, calculate_unknown_charge
 from app.b0.protocols import BudgetProtocol, RemainingBudgetData, ReservationData
+from app.usage.budget import budget_guard
+from app.usage.schemas import BudgetAction
 
 
 def _now() -> str:
@@ -17,8 +19,9 @@ def _now() -> str:
 
 class SQLiteBudgetTracker(BudgetProtocol):
     """
-    Budget tracker backed by SQLite reservations table.
-    Enforces atomic reserve, commit, release, expire per B0 §5.
+    B1 Execution Budget Middleware backed by SQLite reservations table and B0 CAS primitives.
+    Enforces atomic reserve, commit, release, expire per B0 §5,
+    while delegating high-level quota checks and policies to app.usage.budget.budget_guard.
     """
 
     def __init__(self, db_path: str):
@@ -35,7 +38,16 @@ class SQLiteBudgetTracker(BudgetProtocol):
     def reserve(
         self, task_id: str, tokens: int, calls: int, caller_id: str, subtask_id: str | None = None
     ) -> ReservationData:
-        # Pre-check available budget
+        # 1. High-level usage policy guard check (§USAGE-BUDGET)
+        guard_res = budget_guard.check_budget(
+            task_id=task_id, agent_id=caller_id, estimated_addition_tokens=tokens
+        )
+        if guard_res.action == BudgetAction.BLOCK:
+            raise ValueError(
+                f"BudgetGuard blocked reservation for task '{task_id}': {guard_res.reason}"
+            )
+
+        # 2. Pre-check available task budget per B0 formulas
         rem = self.remaining_budget(task_id)
         if rem.remaining_tokens < tokens or rem.remaining_calls < calls:
             raise ValueError(
@@ -185,3 +197,7 @@ class SQLiteBudgetTracker(BudgetProtocol):
                 created_at=row["created_at"],
                 resolved_at=row["resolved_at"],
             )
+
+
+# Semantic Alias reflecting architectural layer
+B1BudgetMiddleware = SQLiteBudgetTracker
