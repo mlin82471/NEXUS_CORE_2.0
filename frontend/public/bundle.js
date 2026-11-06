@@ -7370,6 +7370,42 @@ const App = () => {
     return saved !== null ? saved === 'dark' : true; // Default dark tech obsidian
   });
 
+  // Codex Sidebar collapse state
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('nexus_sidebar_collapsed');
+    return saved === 'true';
+  });
+
+  // Codex Sidebar search filter
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Codex Recent tasks in sidebar
+  const [recentTasks, setRecentTasks] = useState([]);
+
+  // Codex Bottom Console Drawer
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+  const [consoleLogs, setConsoleLogs] = useState([{
+    time: '21:02:18',
+    type: 'SYS',
+    msg: 'NEXUS CORE 2.1 引擎内核已就绪，B0 CAS 状态行锁激活'
+  }, {
+    time: '21:05:40',
+    type: 'HOST',
+    msg: '检测到宿主真实 DSH 运行时: D:\\新建文件夹\\...\\dsh.cmd (0.2.1-rc.3)'
+  }, {
+    time: '21:08:12',
+    type: 'HOST',
+    msg: '检测到宿主真实 Hermes 运行时: ...\\hermes\\bin\\hermes.exe (v0.21.6)'
+  }, {
+    time: '21:12:05',
+    type: 'HOST',
+    msg: '检测到宿主 Google Antigravity 宿主环境: Antigravity.exe'
+  }, {
+    time: '21:31:16',
+    type: 'ORCH',
+    msg: '真实流水线完成: Hermes 调研 -> DSH 探活 -> Antigravity 熔断实现 (1595 tokens)'
+  }]);
+
   // Sync with URL Hash routing
   useEffect(() => {
     const handleHashChange = () => {
@@ -7382,63 +7418,96 @@ const App = () => {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // Global Keyboard Shortcut: Ctrl+B or Cmd+B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCollapsed]);
+
+  // Fetch server health & recent tasks
+  useEffect(() => {
+    fetch(`${API_BASE}/health`).then(res => setIsServerOnline(res.ok)).catch(() => setIsServerOnline(false));
+    fetch(`${API_BASE}/tasks`).then(res => res.ok ? res.json() : []).then(data => {
+      if (Array.isArray(data)) {
+        setRecentTasks(data.slice(0, 5));
+      }
+    }).catch(() => {});
+  }, []);
   const handleTabClick = tab => {
     if (VALID_TABS.includes(tab)) {
       setActiveTab(tab);
       window.location.hash = `#/${tab}`;
     }
   };
+  const toggleSidebar = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    localStorage.setItem('nexus_sidebar_collapsed', String(next));
+  };
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
     localStorage.setItem('nexus_theme', next ? 'dark' : 'light');
   };
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/health').then(res => setIsServerOnline(res.ok)).catch(() => setIsServerOnline(false));
-  }, []);
   const navSections = [{
     title: 'MAIN WORKSPACE',
     items: [{
       key: 'dashboard',
-      label: '📊 控制台总览',
+      icon: '📊',
+      label: '控制台总览',
       desc: 'KPI / 遥测 / 快捷通道'
     }, {
       key: 'agents',
-      label: '🤖 Agent 管理中心',
+      icon: '🤖',
+      label: 'Agent 管理中心',
       desc: '可视化向导 / 模板 / 启停'
     }, {
       key: 'models',
-      label: '🌐 模型接入中心',
+      icon: '🌐',
+      label: '模型接入中心',
       desc: '多服务商 / 测速 / 路由'
     }, {
       key: 'usage',
-      label: '📈 Token 成本监控',
+      icon: '📈',
+      label: 'Token 成本监控',
       desc: '真实审计 / 报表 / 预算'
     }]
   }, {
     title: 'EXECUTION & TOPOLOGY',
     items: [{
       key: 'tasks',
-      label: '📝 任务编排与实时流',
+      icon: '📝',
+      label: '任务编排与实时流',
       desc: 'SSE 推流与即时取消'
     }, {
       key: 'dag',
-      label: '🕸️ DAG 拓扑工作台',
+      icon: '🕸️',
+      label: 'DAG 拓扑工作台',
       desc: '可拖拽拓扑图与抽屉'
     }, {
       key: 'benchmark',
-      label: '🔬 性能对比实验室',
+      icon: '🔬',
+      label: '性能对比实验室',
       desc: '多模型/Agent 竞速收益'
     }]
   }, {
     title: 'GOVERNANCE & AUDIT',
     items: [{
       key: 'evolution',
-      label: '🧬 M4 自主进化与巡检',
+      icon: '🧬',
+      label: 'M4 自主进化与巡检',
       desc: '沙箱预审 / 审批 / 回滚'
     }, {
       key: 'memory',
-      label: '🧠 M3 长期记忆库',
+      icon: '🧠',
+      label: 'M3 长期记忆库',
       desc: 'RCA 归因与混合向量检索'
     }]
   }];
@@ -7449,6 +7518,14 @@ const App = () => {
   const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
   const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
   const textSub = isDark ? '#8b949e' : '#86868b';
+  const cardBg = isDark ? '#21262d' : '#ffffff';
+
+  // Filtered nav items when user searches
+  const isSearching = searchQuery.trim().length > 0;
+  const filteredSections = navSections.map(sec => ({
+    ...sec,
+    items: sec.items.filter(item => !isSearching || item.label.toLowerCase().includes(searchQuery.toLowerCase()) || item.desc.toLowerCase().includes(searchQuery.toLowerCase()) || item.key.toLowerCase().includes(searchQuery.toLowerCase()))
+  })).filter(sec => sec.items.length > 0);
   return /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
@@ -7459,8 +7536,9 @@ const App = () => {
       transition: 'background 0.2s ease'
     }
   }, /*#__PURE__*/React.createElement("aside", {
+    className: "codex-sidebar-transition",
     style: {
-      width: '260px',
+      width: isCollapsed ? '68px' : '270px',
       background: sidebarBg,
       borderRight: `1px solid ${borderCol}`,
       display: 'flex',
@@ -7469,14 +7547,18 @@ const App = () => {
       top: 0,
       height: '100vh',
       zIndex: 50,
-      flexShrink: 0
+      flexShrink: 0,
+      boxShadow: isDark ? '2px 0 20px rgba(0,0,0,0.2)' : '2px 0 10px rgba(0,0,0,0.02)'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '20px 24px',
-      borderBottom: `1px solid ${borderCol}`
+      padding: isCollapsed ? '16px 8px' : '16px 20px',
+      borderBottom: `1px solid ${borderCol}`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: isCollapsed ? 'center' : 'space-between'
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, !isCollapsed ? /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'center',
@@ -7488,113 +7570,422 @@ const App = () => {
     }
   }, "\u26A1"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: '16px',
+      fontSize: '15px',
       fontWeight: '700',
       letterSpacing: '-0.02em',
       color: textMain
     }
   }, "NEXUS CORE 2.1"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: '11px',
+      fontSize: '10px',
       color: '#58a6ff',
-      fontWeight: '600'
+      fontWeight: '700',
+      letterSpacing: '0.04em'
     }
-  }, "CONTROL CENTER")))), /*#__PURE__*/React.createElement("div", {
+  }, "CODEX CONSOLE"))) : /*#__PURE__*/React.createElement("div", {
+    title: "NEXUS CORE 2.1",
+    style: {
+      fontSize: '22px',
+      cursor: 'pointer'
+    },
+    onClick: toggleSidebar
+  }, "\u26A1"), /*#__PURE__*/React.createElement("button", {
+    onClick: toggleSidebar,
+    title: isCollapsed ? '展开侧边栏 (Ctrl+B)' : '折叠侧边栏 (Ctrl+B)',
+    style: {
+      background: 'transparent',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '6px',
+      padding: '4px 7px',
+      cursor: 'pointer',
+      color: textSub,
+      fontSize: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  }, isCollapsed ? '◧' : '◨')), !isCollapsed && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '12px 16px 4px 16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      background: isDark ? 'rgba(255,255,255,0.04)' : '#f0f2f5',
+      padding: '6px 10px',
+      borderRadius: '8px',
+      border: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "\uD83D\uDD0D"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "\u5FEB\u901F\u641C\u7D22\u529F\u80FD...",
+    value: searchQuery,
+    onChange: e => setSearchQuery(e.target.value),
+    style: {
+      width: '100%',
+      background: 'transparent',
+      border: 'none',
+      fontSize: '12px',
+      color: textMain,
+      outline: 'none'
+    }
+  }), searchQuery && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSearchQuery(''),
+    style: {
+      background: 'transparent',
+      border: 'none',
+      color: textSub,
+      fontSize: '11px',
+      cursor: 'pointer'
+    }
+  }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       overflowY: 'auto',
-      padding: '16px 14px',
+      padding: isCollapsed ? '12px 8px' : '14px 12px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '20px'
+      gap: '16px'
     }
-  }, navSections.map(sec => /*#__PURE__*/React.createElement("div", {
+  }, filteredSections.map(sec => /*#__PURE__*/React.createElement("div", {
     key: sec.title
-  }, /*#__PURE__*/React.createElement("div", {
+  }, !isCollapsed && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: '11px',
+      fontSize: '10px',
       fontWeight: '700',
       color: textSub,
-      letterSpacing: '0.05em',
-      padding: '0 10px 8px 10px'
+      letterSpacing: '0.06em',
+      padding: '0 8px 6px 8px'
     }
   }, sec.title), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '4px'
+      gap: '3px'
     }
   }, sec.items.map(item => {
     const isActive = activeTab === item.key;
-    return /*#__PURE__*/React.createElement("button", {
+    return /*#__PURE__*/React.createElement("div", {
       key: item.key,
+      className: "codex-rail-item"
+    }, /*#__PURE__*/React.createElement("button", {
       onClick: () => handleTabClick(item.key),
       style: {
-        padding: '10px 12px',
-        borderRadius: '10px',
+        width: '100%',
+        padding: isCollapsed ? '10px 0' : '8px 10px',
+        borderRadius: '8px',
         border: 'none',
         background: isActive ? isDark ? 'rgba(56, 139, 253, 0.16)' : 'rgba(0, 113, 227, 0.1)' : 'transparent',
         color: isActive ? '#58a6ff' : textMain,
-        textAlign: 'left',
+        textAlign: isCollapsed ? 'center' : 'left',
         cursor: 'pointer',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '2px',
+        alignItems: 'center',
+        gap: isCollapsed ? '0' : '10px',
+        justifyContent: isCollapsed ? 'center' : 'flex-start',
         position: 'relative',
-        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-        transform: isActive ? 'translateX(3px)' : 'none',
-        boxShadow: isActive ? isDark ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,113,227,0.12)' : 'none'
+        transition: 'all 0.2s ease',
+        boxShadow: isActive ? isDark ? 'inset 0 1px 0 rgba(255,255,255,0.08)' : '0 2px 6px rgba(0,113,227,0.1)' : 'none'
       }
-    }, isActive && /*#__PURE__*/React.createElement("div", {
+    }, isActive && !isCollapsed && /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
-        left: '-8px',
-        top: '22%',
-        bottom: '22%',
+        left: '-4px',
+        top: '20%',
+        bottom: '20%',
         width: '3px',
         background: '#58a6ff',
         borderRadius: '2px'
       }
-    }), /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: '13px',
-        fontWeight: isActive ? '700' : '500'
+        fontSize: isCollapsed ? '18px' : '15px'
+      }
+    }, item.icon), !isCollapsed && /*#__PURE__*/React.createElement("div", {
+      style: {
+        overflow: 'hidden'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '12px',
+        fontWeight: isActive ? '700' : '500',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden'
       }
     }, item.label), /*#__PURE__*/React.createElement("div", {
       style: {
-        fontSize: '11px',
-        color: textSub
+        fontSize: '10px',
+        color: textSub,
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden'
       }
-    }, item.desc));
-  }))))), /*#__PURE__*/React.createElement("div", {
+    }, item.desc))), isCollapsed && /*#__PURE__*/React.createElement("div", {
+      className: "codex-tooltip"
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: '700'
+      }
+    }, item.label), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '10px',
+        color: '#8b949e'
+      }
+    }, item.desc)));
+  })))), !isCollapsed && /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '16px 20px',
+      background: isDark ? 'rgba(0,0,0,0.25)' : '#f8fafc',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '10px',
+      padding: '10px 12px',
+      marginTop: '4px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      fontWeight: '700',
+      color: textSub,
+      letterSpacing: '0.04em'
+    }
+  }, "HOST AGENTS \u672C\u673A\u667A\u80FD\u4F53"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '9px',
+      color: '#3fb950',
+      fontWeight: '700'
+    }
+  }, "3 ONLINE")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '5px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: () => handleTabClick('agents'),
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      fontSize: '11px',
+      cursor: 'pointer',
+      padding: '2px 0'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#3fb950',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("strong", null, "DSH"), " (0.2.1-rc.3)"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '9px',
+      color: textSub,
+      fontFamily: 'monospace'
+    }
+  }, "dsh.cmd")), /*#__PURE__*/React.createElement("div", {
+    onClick: () => handleTabClick('agents'),
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      fontSize: '11px',
+      cursor: 'pointer',
+      padding: '2px 0'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#3fb950',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("strong", null, "Hermes"), " (0.21.6)"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '9px',
+      color: textSub,
+      fontFamily: 'monospace'
+    }
+  }, "hermes.exe")), /*#__PURE__*/React.createElement("div", {
+    onClick: () => handleTabClick('agents'),
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      fontSize: '11px',
+      cursor: 'pointer',
+      padding: '2px 0'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#3fb950',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("strong", null, "Antigravity")), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '9px',
+      color: textSub,
+      fontFamily: 'monospace'
+    }
+  }, "Host Runtime")))), !isCollapsed && recentTasks.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : '#f8fafc',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '10px',
+      padding: '10px 12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      fontWeight: '700',
+      color: textSub,
+      letterSpacing: '0.04em'
+    }
+  }, "RECENT TASKS \u6700\u8FD1\u4EFB\u52A1"), /*#__PURE__*/React.createElement("span", {
+    onClick: () => handleTabClick('tasks'),
+    style: {
+      fontSize: '10px',
+      color: '#58a6ff',
+      cursor: 'pointer'
+    }
+  }, "\u67E5\u770B\u5168\u90E8")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px'
+    }
+  }, recentTasks.slice(0, 3).map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.id,
+    onClick: () => handleTabClick('tasks'),
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      fontSize: '11px',
+      cursor: 'pointer',
+      padding: '4px 6px',
+      borderRadius: '6px',
+      background: isDark ? 'rgba(255,255,255,0.02)' : '#fff'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      maxWidth: '160px'
+    }
+  }, t.goal), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '9px',
+      padding: '1px 5px',
+      borderRadius: '4px',
+      background: t.status === 'success' ? 'rgba(63, 185, 80, 0.15)' : 'rgba(210, 153, 34, 0.15)',
+      color: t.status === 'success' ? '#3fb950' : '#d29922',
+      fontWeight: '700'
+    }
+  }, t.status)))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: isCollapsed ? '12px 0' : '12px 18px',
       borderTop: `1px solid ${borderCol}`,
       fontSize: '11px',
       color: textSub,
       display: 'flex',
-      justifyContent: 'space-between',
+      justifyContent: isCollapsed ? 'center' : 'space-between',
       alignItems: 'center'
     }
-  }, /*#__PURE__*/React.createElement("span", null, "199 \u9879\u6D4B\u8BD5\u5168\u90E8\u901A\u8FC7"), /*#__PURE__*/React.createElement("span", {
+  }, !isCollapsed ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: '#3fb950',
-      fontWeight: '600'
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px'
     }
-  }, "\u25CF PROD READY"))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#3fb950',
+      display: 'inline-block'
+    }
+  }), /*#__PURE__*/React.createElement("span", null, "208 \u9879\u6D4B\u8BD5\u5168\u8FC7")), /*#__PURE__*/React.createElement("button", {
+    onClick: toggleSidebar,
+    style: {
+      background: 'transparent',
+      border: 'none',
+      color: textSub,
+      fontSize: '10px',
+      cursor: 'pointer',
+      padding: '2px 4px'
+    }
+  }, "\u6298\u53E0 [Ctrl+B]")) : /*#__PURE__*/React.createElement("button", {
+    onClick: toggleSidebar,
+    title: "\u5C55\u5F00\u4FA7\u8FB9\u680F (Ctrl+B)",
+    style: {
+      background: 'transparent',
+      border: 'none',
+      color: textSub,
+      fontSize: '13px',
+      cursor: 'pointer'
+    }
+  }, "\u25E7"))), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      minWidth: 0
+      minWidth: 0,
+      position: 'relative'
     }
   }, /*#__PURE__*/React.createElement("header", {
     style: {
-      height: '60px',
-      background: isDark ? 'rgba(22, 27, 34, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+      height: '56px',
+      background: isDark ? 'rgba(22, 27, 34, 0.85)' : 'rgba(255, 255, 255, 0.85)',
       backdropFilter: 'blur(16px)',
       borderBottom: `1px solid ${borderCol}`,
-      padding: '0 32px',
+      padding: '0 24px',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -7606,71 +7997,132 @@ const App = () => {
     style: {
       display: 'flex',
       alignItems: 'center',
-      gap: '10px'
+      gap: '8px'
     }
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: toggleSidebar,
     style: {
-      fontSize: '14px',
-      fontWeight: '600',
+      background: isDark ? 'rgba(255,255,255,0.05)' : '#f0f2f5',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '6px',
+      padding: '4px 8px',
+      cursor: 'pointer',
       color: textMain,
-      textTransform: 'capitalize'
-    }
-  }, activeTab), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: '11px',
-      padding: '2px 8px',
-      borderRadius: '10px',
-      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-      color: textSub
-    }
-  }, "\u53CC\u6A21\u5C31\u7EEA (Web + Desktop)")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '16px'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
       fontSize: '12px',
       display: 'flex',
       alignItems: 'center',
-      gap: '8px',
-      color: isServerOnline ? '#34c759' : '#f85149',
-      fontWeight: '500'
+      gap: '4px'
+    },
+    title: "\u6298\u53E0/\u5C55\u5F00\u4FA7\u8FB9\u680F (Ctrl+B)"
+  }, /*#__PURE__*/React.createElement("span", null, isCollapsed ? '◧' : '◨')), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "NEXUS"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, "/"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '13px',
+      fontWeight: '700',
+      color: textMain,
+      textTransform: 'uppercase'
+    }
+  }, activeTab), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      padding: '1px 6px',
+      borderRadius: '6px',
+      background: isDark ? 'rgba(56, 139, 253, 0.15)' : 'rgba(0, 113, 227, 0.1)',
+      color: '#58a6ff',
+      fontWeight: '600'
+    }
+  }, "Codex Workspace")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px'
     }
   }, /*#__PURE__*/React.createElement("span", {
-    className: isServerOnline ? 'apple-pulse-green' : '',
     style: {
-      width: '8px',
-      height: '8px',
-      borderRadius: '50%',
-      background: isServerOnline ? '#34c759' : '#f85149',
-      display: 'inline-block'
+      fontSize: '11px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: isDark ? 'rgba(63, 185, 80, 0.1)' : '#f0fdf4',
+      border: `1px solid ${isDark ? 'rgba(63, 185, 80, 0.25)' : 'rgba(63, 185, 80, 0.3)'}`,
+      padding: '4px 10px',
+      borderRadius: '8px',
+      color: '#3fb950',
+      fontWeight: '600'
     }
-  }), isServerOnline ? '主控服务在线 (:8000)' : '主控服务未连接'), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "apple-pulse-green",
+    style: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#3fb950'
+    }
+  }), "3\u4E2A\u5BBF\u4E3B\u771F\u5B9EAgent\u5DF2\u7ED1\u5B9A"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleTabClick('tasks'),
+    style: {
+      background: '#0071e3',
+      border: 'none',
+      borderRadius: '8px',
+      color: '#fff',
+      padding: '5px 12px',
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "+"), " \u7F16\u6392\u4EFB\u52A1"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setIsConsoleOpen(!isConsoleOpen),
+    title: "\u5207\u6362\u5E95\u90E8\u63A7\u5236\u53F0\u6258\u76D8",
+    style: {
+      background: isConsoleOpen ? isDark ? 'rgba(88, 166, 255, 0.2)' : 'rgba(0, 113, 227, 0.15)' : 'transparent',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '8px',
+      padding: '5px 10px',
+      fontSize: '12px',
+      cursor: 'pointer',
+      color: isConsoleOpen ? '#58a6ff' : textMain,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCBB"), " \u63A7\u5236\u53F0"), /*#__PURE__*/React.createElement("button", {
     onClick: toggleTheme,
     title: "\u5207\u6362\u6DF1\u8272/\u6D45\u8272\u4E3B\u9898",
     style: {
       background: isDark ? '#1f2937' : '#f0f7ff',
       border: `1px solid ${borderCol}`,
       borderRadius: '8px',
-      padding: '6px 10px',
-      fontSize: '13px',
+      padding: '5px 9px',
+      fontSize: '12px',
       cursor: 'pointer',
       color: textMain,
       display: 'flex',
       alignItems: 'center',
-      gap: '6px'
+      gap: '4px'
     }
-  }, /*#__PURE__*/React.createElement("span", null, isDark ? '🌙 深色' : '☀️ 浅色')))), /*#__PURE__*/React.createElement("main", {
+  }, /*#__PURE__*/React.createElement("span", null, isDark ? '🌙' : '☀️')))), /*#__PURE__*/React.createElement("main", {
     key: activeTab,
     className: "apple-animate-in",
     style: {
       flex: 1,
-      padding: '28px 32px',
+      padding: '24px 28px',
       maxWidth: '1440px',
       width: '100%',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      marginBottom: isConsoleOpen ? '190px' : '0',
+      transition: 'margin-bottom 0.28s ease'
     }
   }, activeTab === 'dashboard' && /*#__PURE__*/React.createElement(DashboardOverview, {
     onNavigate: handleTabClick,
@@ -7683,7 +8135,107 @@ const App = () => {
     isDark: isDark
   }), activeTab === 'tasks' && /*#__PURE__*/React.createElement(TaskWorkspace, null), activeTab === 'dag' && /*#__PURE__*/React.createElement(DAGStudio, null), activeTab === 'benchmark' && /*#__PURE__*/React.createElement(BenchmarkCenter, null), activeTab === 'evolution' && /*#__PURE__*/React.createElement(EvolutionPanel, {
     isDark: isDark
-  }), activeTab === 'memory' && /*#__PURE__*/React.createElement(MemoryInspector, null))));
+  }), activeTab === 'memory' && /*#__PURE__*/React.createElement(MemoryInspector, null)), /*#__PURE__*/React.createElement("div", {
+    className: "codex-bottom-drawer",
+    style: {
+      position: 'fixed',
+      bottom: 0,
+      left: isCollapsed ? '68px' : '270px',
+      right: 0,
+      height: isConsoleOpen ? '190px' : '0',
+      background: isDark ? '#0d1117' : '#1e1e1e',
+      color: '#e5e5ea',
+      borderTop: isConsoleOpen ? `1px solid ${borderCol}` : 'none',
+      zIndex: 60,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      boxShadow: '0 -8px 24px rgba(0,0,0,0.3)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: '32px',
+      background: isDark ? '#161b22' : '#252526',
+      borderBottom: `1px solid ${borderCol}`,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '0 16px',
+      fontSize: '11px',
+      fontFamily: 'monospace'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#58a6ff',
+      fontWeight: '700'
+    }
+  }, "\u26A1 NEXUS TELEMETRY STREAM"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#3fb950'
+    }
+  }, "\u25CF LIVE"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#8b949e'
+    }
+  }, "\u4E3B\u673A\u76F4\u8FDE\u63A2\u9488\u5C31\u7EEA")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setConsoleLogs([]),
+    style: {
+      background: 'transparent',
+      border: 'none',
+      color: '#8b949e',
+      fontSize: '10px',
+      cursor: 'pointer'
+    }
+  }, "\u6E05\u7A7A"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setIsConsoleOpen(false),
+    style: {
+      background: 'transparent',
+      border: 'none',
+      color: '#8b949e',
+      fontSize: '12px',
+      cursor: 'pointer'
+    }
+  }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      padding: '10px 16px',
+      overflowY: 'auto',
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      lineHeight: '1.6'
+    }
+  }, consoleLogs.map((log, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: 'flex',
+      gap: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#8b949e'
+    }
+  }, "[", log.time, "]"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: log.type === 'HOST' ? '#3fb950' : log.type === 'ORCH' ? '#58a6ff' : '#d29922',
+      fontWeight: '700'
+    }
+  }, "[", log.type, "]"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#f0f6fc'
+    }
+  }, log.msg)))))));
 };
 
 // Mount React root

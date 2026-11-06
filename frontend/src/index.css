@@ -186,3 +186,44 @@ input:focus, textarea:focus, select:focus {
   animation: spin 0.8s linear infinite;
   margin-right: 6px;
 }
+
+/* Codex UI Extensions */
+.codex-sidebar-transition {
+  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.codex-rail-item {
+  position: relative;
+  transition: all 0.2s var(--apple-ease);
+}
+
+.codex-rail-item:hover .codex-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(8px);
+}
+
+.codex-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(2px);
+  background: #1f2937;
+  color: #f0f6fc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.18s var(--apple-ease);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.codex-bottom-drawer {
+  transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
