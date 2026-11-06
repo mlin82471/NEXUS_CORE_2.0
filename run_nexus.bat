@@ -1,44 +1,78 @@
 @echo off
-chcp 65001 > nul
-title NEXUS CORE 2.0 — Enterprise Multi-Agent Engine
+setlocal enabledelayedexpansion
+title NEXUS CORE 2.0 Launcher
 
 echo ============================================================
-echo   🚀 NEXUS CORE 2.0 — 生产级主控系统启动器
+echo   NEXUS CORE 2.0 - Enterprise Multi-Agent Engine Launcher
 echo ============================================================
 echo.
 
-:: 1. 检查 Python 运行环境
-python --version > nul 2>&1
-if %errorlevel% neq 0 (
-    echo [错误] 未检测到 Python 环境，请先安装 Python 3.10 及以上版本并加入 PATH。
+:: 1. Locate Project Root Directory
+set "PROJECT_DIR=%~dp0"
+if exist "%PROJECT_DIR%scripts\start_server.py" (
+    set "PROJECT_ROOT=%PROJECT_DIR%"
+) else (
+    set "PROJECT_ROOT=C:\Users\linhr\.gemini\antigravity\scratch\nexus_core_2.0\NEXUS_CORE_2.0\"
+)
+
+if not exist "%PROJECT_ROOT%scripts\start_server.py" (
+    echo [ERROR] Project root not found at: %PROJECT_ROOT%
+    echo Please ensure NEXUS CORE 2.0 files are present.
+    echo.
     pause
     exit /b 1
 )
 
-:: 2. 设置工作目录为脚本所在根目录
-cd /d "%~dp0"
-echo [就绪] 工作目录: %CD%
+cd /d "%PROJECT_ROOT%"
+echo [OK] Project Directory: %CD%
 
-:: 3. 检查必要依赖
-echo [检查] 正在验证核心运行库依赖...
-python -c "import fastapi, sqlalchemy, httpx, pydantic, uvicorn" > nul 2>&1
-if %errorlevel% neq 0 (
-    echo [提示] 正在自动安装运行依赖 (requirements.txt)...
-    pip install -r requirements.txt
+:: 2. Detect Python Binary
+set "PYTHON_BIN="
+if exist "C:\Python315\python.exe" (
+    set "PYTHON_BIN=C:\Python315\python.exe"
+) else (
+    where python >nul 2>&1
+    if !errorlevel! equ 0 (
+        set "PYTHON_BIN=python"
+    ) else (
+        where py >nul 2>&1
+        if !errorlevel! equ 0 (
+            set "PYTHON_BIN=py -3"
+        )
+    )
 )
 
-:: 4. 延迟 2 秒自动唤起 Windows 浏览器控制台
-start "" cmd /c "timeout /t 2 /nobreak > nul && start http://127.0.0.1:8000/dashboard/"
+if "%PYTHON_BIN%"=="" (
+    echo [ERROR] Python environment not detected!
+    echo Please install Python 3.10+ or check system PATH.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo [OK] Using Python: %PYTHON_BIN%
+"%PYTHON_BIN%" --version
+
+:: 3. Launch the Server
+echo.
+echo ============================================================
+echo   Starting NEXUS CORE 2.0 Server...
+echo   Dashboard will automatically open at:
+echo   http://127.0.0.1:8000/dashboard/
+echo.
+echo   Press Ctrl + C to stop the server anytime.
+echo ============================================================
+echo.
+
+"%PYTHON_BIN%" scripts\start_server.py
+
+if %errorlevel% neq 0 (
+    echo.
+    echo [ERROR] Server exited with status code %errorlevel%.
+)
 
 echo.
 echo ============================================================
-echo   ⚡ 服务正在启动，浏览器将自动打开控制台:
-echo   👉 http://127.0.0.1:8000/dashboard/
-echo   按 Ctrl + C 可随时安全终止服务。
+echo Server process has stopped. Press any key to close this window.
 echo ============================================================
-echo.
-
-:: 5. 启动主控服务进程
-python scripts/start_server.py
-
 pause
