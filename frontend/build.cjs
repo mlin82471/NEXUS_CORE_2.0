@@ -20,7 +20,7 @@ const files = [
 
 let fullCode = `
 const { useState, useEffect, useRef } = React;
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 `;
 
 files.forEach(f => {
@@ -28,7 +28,7 @@ files.forEach(f => {
   // Remove import lines (single line and multi-line)
   content = content.replace(/import\s+[\s\S]*?from\s+['"].*?['"];?/g, '');
   // Remove duplicate const API_BASE = ...
-  content = content.replace(/const\s+API_BASE\s*=\s*['"].*?['"];?/g, '');
+  content = content.replace(/const\s+API_BASE\s*=[\s\S]*?;/g, '');
   // Remove export default statements
   content = content.replace(/^export\s+default\s+.*?;/gm, '');
   // Remove export keywords

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlanStep, TaskDetail } from '../types.ts';
 import { DAGTopology } from './DAGTopology.tsx';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 
 // Built-in Demo Scenarios for Rich DAG Visualization
 const DEMO_SCENARIOS: Record<string, { name: string; description: string; steps: PlanStep[] }> = {

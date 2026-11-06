@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EvolutionProposal } from '../types.ts';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 
 interface SweeperStatus {
   enabled: boolean;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ModelItem, ProviderPresetItem } from '../types.ts';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 
 interface ModelCenterProps {
   isDark?: boolean;
@@ -176,7 +176,7 @@ export const ModelCenter: React.FC<ModelCenterProps> = ({ isDark = true }) => {
       </div>
 
       {/* Provider Presets Banner */}
-      <div style={{ background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px', padding: '18px' }}>
+      <div className="apple-card" style={{ background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px', padding: '18px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 8px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)' }}>
         <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: textMain }}>
           🧩 支持的官方模型服务商预设
         </h3>
@@ -188,10 +188,11 @@ export const ModelCenter: React.FC<ModelCenterProps> = ({ isDark = true }) => {
                 setShowAddModal(true);
                 handleProviderSelect(p.provider_type);
               }}
+              className="apple-card"
               style={{
                 padding: '12px', borderRadius: '10px', border: `1px solid ${borderCol}`,
                 background: isDark ? '#0d1117' : '#f9fafb', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '10px', transition: 'border-color 0.2s',
+                display: 'flex', alignItems: 'center', gap: '10px',
               }}
             >
               <span style={{ fontSize: '22px' }}>{p.icon}</span>
@@ -205,7 +206,7 @@ export const ModelCenter: React.FC<ModelCenterProps> = ({ isDark = true }) => {
       </div>
 
       {/* Dynamic Routing Policy Setting Card */}
-      <div style={{ background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px', padding: '20px' }}>
+      <div className="apple-card" style={{ background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px', padding: '20px', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 8px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: textMain }}>
             🎯 智能模型路由策略 (Smart Routing Engine)
@@ -350,9 +351,11 @@ export const ModelCenter: React.FC<ModelCenterProps> = ({ isDark = true }) => {
           background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
         }}>
-          <div style={{
+          <div className="apple-modal-box" style={{
             background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px',
             width: '90%', maxWidth: '580px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: textMain }}>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AgentItem, AgentTemplateItem } from '../types.ts';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 
 interface AgentCenterProps {
   isDark?: boolean;
@@ -225,17 +225,20 @@ export const AgentCenter: React.FC<AgentCenterProps> = ({ isDark = true }) => {
         {filteredAgents.map(ag => (
           <div
             key={ag.agent_id}
+            className="apple-card"
             style={{
               background: cardBg,
               border: `1px solid ${ag.status === 'active' ? borderCol : 'rgba(239, 68, 68, 0.2)'}`,
-              borderRadius: '14px',
-              padding: '18px',
+              borderRadius: '16px',
+              padding: '20px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               gap: '14px',
               opacity: ag.status === 'active' ? 1 : 0.7,
-              transition: 'transform 0.15s ease',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 8px 24px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
             }}
           >
             {/* Card Header */}
@@ -346,10 +349,11 @@ export const AgentCenter: React.FC<AgentCenterProps> = ({ isDark = true }) => {
           background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
         }}>
-          <div style={{
+          <div className="apple-modal-box" style={{
             background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px',
             width: '90%', maxWidth: '640px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
           }}>
             {/* Wizard Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -604,9 +608,11 @@ export const AgentCenter: React.FC<AgentCenterProps> = ({ isDark = true }) => {
           background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
         }}>
-          <div style={{
+          <div className="apple-modal-box" style={{
             background: cardBg, border: `1px solid ${borderCol}`, borderRadius: '16px',
             width: '90%', maxWidth: '580px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>

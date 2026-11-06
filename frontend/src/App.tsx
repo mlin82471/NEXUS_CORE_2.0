@@ -150,16 +150,25 @@ export const App: React.FC = () => {
                         padding: '10px 12px',
                         borderRadius: '10px',
                         border: 'none',
-                        background: isActive ? (isDark ? 'rgba(56, 139, 253, 0.15)' : 'rgba(0, 113, 227, 0.1)') : 'transparent',
+                        background: isActive ? (isDark ? 'rgba(56, 139, 253, 0.16)' : 'rgba(0, 113, 227, 0.1)') : 'transparent',
                         color: isActive ? '#58a6ff' : textMain,
                         textAlign: 'left',
                         cursor: 'pointer',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '2px',
-                        transition: 'all 0.15s ease',
+                        position: 'relative',
+                        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                        transform: isActive ? 'translateX(3px)' : 'none',
+                        boxShadow: isActive ? (isDark ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,113,227,0.12)') : 'none',
                       }}
                     >
+                      {isActive && (
+                        <div style={{
+                          position: 'absolute', left: '-8px', top: '22%', bottom: '22%', width: '3px',
+                          background: '#58a6ff', borderRadius: '2px',
+                        }} />
+                      )}
                       <div style={{ fontSize: '13px', fontWeight: isActive ? '700' : '500' }}>
                         {item.label}
                       </div>
@@ -211,10 +220,13 @@ export const App: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Core Online Status */}
             <span style={{
-              fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px',
-              color: isServerOnline ? '#3fb950' : '#f85149', fontWeight: '500'
+              fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px',
+              color: isServerOnline ? '#34c759' : '#f85149', fontWeight: '500'
             }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isServerOnline ? '#3fb950' : '#f85149' }} />
+              <span
+                className={isServerOnline ? 'apple-pulse-green' : ''}
+                style={{ width: '8px', height: '8px', borderRadius: '50%', background: isServerOnline ? '#34c759' : '#f85149', display: 'inline-block' }}
+              />
               {isServerOnline ? '主控服务在线 (:8000)' : '主控服务未连接'}
             </span>
 
@@ -241,7 +253,7 @@ export const App: React.FC = () => {
         </header>
 
         {/* Viewport */}
-        <main style={{ flex: 1, padding: '28px 32px', maxWidth: '1440px', width: '100%', boxSizing: 'border-box' }}>
+        <main key={activeTab} className="apple-animate-in" style={{ flex: 1, padding: '28px 32px', maxWidth: '1440px', width: '100%', boxSizing: 'border-box' }}>
           {activeTab === 'dashboard' && <DashboardOverview onNavigate={handleTabClick} isDark={isDark} />}
           {activeTab === 'agents' && <AgentCenter isDark={isDark} />}
           {activeTab === 'models' && <ModelCenter isDark={isDark} />}

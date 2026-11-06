@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AgentMetric } from '../types.ts';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 
 export const AgentMatrix: React.FC = () => {
   const [metrics, setMetrics] = useState<AgentMetric[]>([]);

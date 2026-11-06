@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TaskDetail, PlanStep } from '../types.ts';
 import { DAGTopology } from './DAGTopology.tsx';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = typeof window !== 'undefined' && window.location.origin.startsWith('http') ? '' : 'http://127.0.0.1:8000';
 
 export const TaskWorkspace: React.FC = () => {
   const [goal, setGoal] = useState('');
