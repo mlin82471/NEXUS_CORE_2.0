@@ -1,8 +1,8 @@
-# NEXUS CORE 2.1 — 企业级多智能体主控与自主研发工程引擎
+# NEXUS CORE 2.1 — 企业级多智能体主控与自主研发运维工程引擎
 
-> **当前阶段**：`NEXUS 2.1 生产候选 (Platform 基础设施 + NEXUS DEV 自主研发 + 3 大 DSH 杀手级特性)` | **状态**：`PROD READY`  
-> **自动化测试矩阵**：**179 项测试全部通过（153 Pytest + 26 B0 v7 架构契约测试），0 失败**  
-> **核心突破**：首发交付 `app/platform/` 共享基础设施与 `app/dev/` 自主研发系统，并全面吸收 DSH/Super-Agent 三大杀手级机制：
+> **当前阶段**：`NEXUS 2.1 生产就绪 (Platform 基础设施 + NEXUS DEV 自主软件研发 + NEXUS OPS 自主运维 + 3 大 DSH 杀手级特性)` | **状态**：`PROD READY`  
+> **自动化测试矩阵**：**184 项测试全部通过（158 Pytest + 26 B0 v7 架构契约测试），0 失败**  
+> **核心突破**：首发交付 `app/platform/` 平台底座、`app/dev/` 自主研发系统与 `app/ops/` 自主运维系统，并全面吸收 DSH/Super-Agent 三大杀手级机制：
 > 1. **Observe Mode (影子观察模式)**：渐进式信任机制，默认记录 Agent 意图与预测损耗，人工复核满意后再平滑提升为 AUTO；
 > 2. **Ticket 与 Assignment 解耦 + Thread 订阅**：会话与任务实体分离，支持运行中的 Worker 接收中途追加的用户需求，无需重跑 DAG；
 > 3. **语义级 Watchdog (防活锁巡检)**：不仅抓捕硬崩溃，还以语义重复度与 Token 消耗速率实时识别“进程存活但死循环”的活锁并动态阻断注入负反馈。
@@ -64,6 +64,10 @@ NEXUS CORE 2.0 严格践行以下**六大不妥协核心准则**：
 | **FRONT**| 现代 React + TS 控制台 | React 18 + TS + TailwindCSS + 交互式可拖拽 DAG 拓扑节点图 (`DAGStudio`) + 6维 Hash 多路由 + 零 CDN 本地离线秒开 |
 | **DEPLOY**| 容器化与 WSL2 部署栈 | `Dockerfile` + `docker-compose.yml` (PostgreSQL 双模) + `scripts/deploy_wsl.sh` 一键初始化自检脚本 |
 | **CLI** | 统一开发者命令行 | `scripts/nexus_cli.py` 覆盖生命周期任务流、终端实时推流、语义混合搜索、自主演进扫描、审批回滚与记忆检索 |
+| **PLATFORM** | 生产级安全运行底座 | `app/platform/`: Git Worktree 隔离工作区 + SHA-256 证据链防篡改 + L0-L3 安全策略引擎 + 动态 Token 审批门禁 + CAS 运行时配置 |
+| **DEV** | 自主软件研发工程系统 | `app/dev/`: 需求结构化拆解 + 4层独立代码审查 (结构/静态/动态/契约) + 隔离测试执行 + 真实 Traceback 闭环自愈修复 + 发布包构建 |
+| **OPS** | 自主运维与故障诊断系统 | `app/ops/`: 遥测指标收集 + 异常感知检测 + RCA 智能归因 + 修复计划生成与 L0-L3 风险评估 + ObserveMode/Approval 门禁执行 + 恢复后客观健康核验 |
+| **DSH-KILLER** | 3大顶级分布式智能机制 | Observe Mode (渐进信任影子审查) + Ticket/Assignment 解耦 ThreadHub (动态运行时需求中途注入) + 语义 Watchdog (活锁巡检) |
 
 ---
 
@@ -107,7 +111,7 @@ python scripts/nexus_cli.py memory search-hybrid "高并发缓存淘汰锁机制
 
 ### 4. 自动化测试验证
 ```bash
-# 运行 131 项 Pytest 全量测试 (含适配器、调度器、记忆、演进、流式推流等)
+# 运行 158 项 Pytest 全量测试 (含 DEV 自主研发、OPS 自主运维、DSH 杀手特性、适配器、记忆、演进、流式推流等)
 python -m pytest tests/
 
 # 运行 26 项 B0 v7 架构契约独立验证套件 (100% 严苛决断表)

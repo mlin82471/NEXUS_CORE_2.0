@@ -1,8 +1,8 @@
 {
   "project": "NEXUS CORE 2.1",
-  "version": "2.1.0-PROD-CANDIDATE",
-  "phase": "NEXUS 2.1 (Platform Infrastructure + NEXUS DEV + 3 Killer DSH Features: Observe Mode, Thread Hub, Semantic Watchdog)",
-  "tests": "153 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 179/179 passed.",
+  "version": "2.1.0-PROD-READY",
+  "phase": "NEXUS 2.1 FULL SUITE (Platform Infrastructure + NEXUS DEV + NEXUS OPS + 3 Killer DSH Features)",
+  "tests": "158 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 184/184 passed.",
   "modules": {
     "killer_features_dsh": {
       "observe_mode": "Progressive Trust (OBSERVE shadow recording -> Human review -> AUTO mode elevation)",
@@ -11,6 +11,7 @@
     },
     "platform": "Workspace isolation (git worktree), Evidence Engine (SHA-256 fingerprint), Policy Engine (L0-L3), Approval Gate, CAS Runtime Config",
     "dev": "Autonomous Software Engineering (Requirements, 4-Level Independent Code Review, Test Runner, Traceback Repair, Release Packaging)",
+    "ops": "Autonomous Operations & Incident Diagnostics (Telemetry Collector, Anomaly Detector, RCA Engine, Remediation Planner with L0-L3 Policy, Execution with ObserveMode & ApprovalGate, Post-Health Verification)",
     "planner": "Qwen / Gemini via OpenAI-compatible API + rule fallback",
     "plan_validation": "Pydantic PlanSchema with DAG cycle detection",
     "agent_registry": "Agent registry with role whitelisting, custom SDK dynamic registration",

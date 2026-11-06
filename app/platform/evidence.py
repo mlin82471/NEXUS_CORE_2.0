@@ -153,7 +153,7 @@ class EvidenceEngine:
         return {
             "valid": all_valid,
             "count": len(items),
-            "evidence_types": list(set(it.evidence_type.value for it in items)),
+            "evidence_types": list(set(it.evidence_type.value if hasattr(it.evidence_type, "value") else str(it.evidence_type) for it in items)),
         }
 
 
