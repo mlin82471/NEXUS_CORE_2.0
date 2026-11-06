@@ -98,6 +98,9 @@ class AgentConfig(BaseModel):
     # Prompts & Metadata
     system_prompt: str = ""
     tags: List[str] = Field(default_factory=list)
+    local_cli_path: Optional[str] = None
+    connected_api: Optional[str] = None
+    is_local_installed: bool = False
     created_at: str = ""
     updated_at: str = ""
 

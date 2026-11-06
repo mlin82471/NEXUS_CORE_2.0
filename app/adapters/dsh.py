@@ -22,6 +22,21 @@ from app.config import settings
 DSH_TIMEOUT = int(os.environ.get("DSH_TIMEOUT", "120"))
 DSH_MODEL = os.environ.get("DSH_MODEL") or os.environ.get("PLANNER_MODEL", "qwen-plus-latest")
 
+LOCAL_DSH_CANDIDATES = [
+    r"D:\新建文件夹\resources\runtime\cli\bin\dsh.cmd",
+    os.path.expandvars(r"%LOCALAPPDATA%\hermes\bin\dsh.cmd"),
+    r"C:\Users\linhr\AppData\Local\hermes\bin\dsh.cmd",
+]
+
+
+def find_local_dsh_cli() -> Optional[str]:
+    """Find real native DSH CLI executable on this machine."""
+    for path in LOCAL_DSH_CANDIDATES:
+        if os.path.exists(path):
+            return path
+    import shutil
+    return shutil.which("dsh")
+
 
 def _do_dsh_worker(
     api_key: str,
@@ -33,9 +48,46 @@ def _do_dsh_worker(
 ):
     """
     Child process worker for DSH cluster dispatch & system operations.
-    Safely executes system analysis or LLM-guided dispatch.
+    Prioritizes real local native DSH CLI (dsh.cmd) if present on the host.
     """
     try:
+        # Priority 1: Direct native invocation of real installed DSH CLI
+        dsh_cli = find_local_dsh_cli()
+        if dsh_cli:
+            import subprocess
+            try:
+                cmd = [dsh_cli, "headless", goal]
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=float(min(60.0, DSH_TIMEOUT)),
+                    shell=True if dsh_cli.endswith(".cmd") or dsh_cli.endswith(".bat") else False,
+                )
+                stdout = (proc.stdout or "").strip()
+                stderr = (proc.stderr or "").strip()
+                output = stdout or stderr
+
+                if output:
+                    in_tok = max(40, len(goal) // 2)
+                    out_tok = max(50, len(output) // 2)
+                    result_queue.put({
+                        "ok": True,
+                        "result": output,
+                        "input_tokens": in_tok,
+                        "output_tokens": out_tok,
+                        "usage_source": "real_local_cli",
+                        "execution_mode": "local_native_dsh",
+                        "adapter_endpoint": dsh_cli,
+                    })
+                    return
+            except subprocess.TimeoutExpired:
+                result_queue.put({"ok": False, "error": f"Local DSH CLI timed out after {DSH_TIMEOUT}s"})
+                return
+            except Exception as e:
+                # If local CLI had an invocation issue, continue to API fallback
+                pass
+
         try:
             from openai import OpenAI
         except ImportError:

@@ -300,6 +300,33 @@ export const AgentCenter: React.FC<AgentCenterProps> = ({ isDark = true }) => {
                   <div style={{ fontSize: '12px', fontWeight: '700', color: '#3fb950' }}>{(ag.verification_pass_rate * 100).toFixed(0)}%</div>
                 </div>
               </div>
+
+              {/* Local Real Host Agent Binding Info */}
+              {ag.local_cli_path && (
+                <div style={{
+                  marginTop: '10px', padding: '8px 10px', borderRadius: '8px',
+                  background: ag.is_local_installed ? (isDark ? 'rgba(63, 185, 80, 0.1)' : '#f0fdf4') : (isDark ? 'rgba(210, 153, 34, 0.1)' : '#fffbeb'),
+                  border: `1px solid ${ag.is_local_installed ? 'rgba(63, 185, 80, 0.3)' : 'rgba(210, 153, 34, 0.3)'}`,
+                  fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: ag.is_local_installed ? '#3fb950' : '#d29922', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span>{ag.is_local_installed ? '🟢 本地宿主已检测就绪' : '🟡 本地路径预置'}</span>
+                    </span>
+                    <span style={{ fontSize: '10px', color: textSub, background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)', padding: '1px 6px', borderRadius: '4px' }}>
+                      {ag.adapter_type?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '10px', color: textSub, wordBreak: 'break-all' }}>
+                    💻 路径: {ag.local_cli_path}
+                  </div>
+                  {ag.connected_api && (
+                    <div style={{ fontSize: '10px', color: '#58a6ff' }}>
+                      🌐 接入: {ag.connected_api}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Card Actions */}

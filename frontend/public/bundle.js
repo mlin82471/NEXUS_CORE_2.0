@@ -4374,7 +4374,53 @@ const AgentCenter = ({
       fontWeight: '700',
       color: '#3fb950'
     }
-  }, (ag.verification_pass_rate * 100).toFixed(0), "%")))), /*#__PURE__*/React.createElement("div", {
+  }, (ag.verification_pass_rate * 100).toFixed(0), "%"))), ag.local_cli_path && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: '10px',
+      padding: '8px 10px',
+      borderRadius: '8px',
+      background: ag.is_local_installed ? isDark ? 'rgba(63, 185, 80, 0.1)' : '#f0fdf4' : isDark ? 'rgba(210, 153, 34, 0.1)' : '#fffbeb',
+      border: `1px solid ${ag.is_local_installed ? 'rgba(63, 185, 80, 0.3)' : 'rgba(210, 153, 34, 0.3)'}`,
+      fontSize: '11px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: ag.is_local_installed ? '#3fb950' : '#d29922',
+      fontWeight: '700',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px'
+    }
+  }, /*#__PURE__*/React.createElement("span", null, ag.is_local_installed ? '🟢 本地宿主已检测就绪' : '🟡 本地路径预置')), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '10px',
+      color: textSub,
+      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)',
+      padding: '1px 6px',
+      borderRadius: '4px'
+    }
+  }, ag.adapter_type?.toUpperCase())), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: 'monospace',
+      fontSize: '10px',
+      color: textSub,
+      wordBreak: 'break-all'
+    }
+  }, "\uD83D\uDCBB \u8DEF\u5F84: ", ag.local_cli_path), ag.connected_api && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '10px',
+      color: '#58a6ff'
+    }
+  }, "\uD83C\uDF10 \u63A5\u5165: ", ag.connected_api))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       justifyContent: 'space-between',

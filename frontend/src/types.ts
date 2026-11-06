@@ -124,6 +124,9 @@ export interface AgentItem {
   allowed_tools: string[];
   system_prompt: string;
   tags: string[];
+  local_cli_path?: string;
+  connected_api?: string;
+  is_local_installed?: boolean;
   total_tokens_consumed: number;
   total_tasks_completed: number;
   success_rate: number;

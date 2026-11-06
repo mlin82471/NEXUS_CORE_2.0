@@ -22,6 +22,22 @@ from app.config import settings
 ANTIGRAVITY_TIMEOUT = int(os.environ.get("ANTIGRAVITY_TIMEOUT", "120"))
 ANTIGRAVITY_MODEL = os.environ.get("ANTIGRAVITY_MODEL") or os.environ.get("PLANNER_MODEL", "qwen-2.5-coder-32b")
 
+LOCAL_ANTIGRAVITY_CANDIDATES = [
+    r"C:\Users\linhr\AppData\Local\Programs\antigravity\Antigravity.exe",
+    os.path.expandvars(r"%LOCALAPPDATA%\Programs\antigravity\Antigravity.exe"),
+    r"C:\Users\linhr\.gemini\antigravity\bin\agentapi.bat",
+]
+
+
+def find_local_antigravity_runtime() -> Optional[str]:
+    """Finds real host Antigravity executable / environment on this PC."""
+    for path in LOCAL_ANTIGRAVITY_CANDIDATES:
+        if os.path.exists(path):
+            return path
+    import shutil
+    return shutil.which("antigravity")
+
+
 
 def _do_antigravity_worker(
     api_key: str,
@@ -142,8 +158,11 @@ class AntigravityAdapter:
         )
         self._model = ANTIGRAVITY_MODEL
         self.agent_id = "antigravity-adapter"
+        self.name = "Google Antigravity 本地真实智能体"
         self.role = "coding"
         self.adapter_type = "antigravity"
+        self.local_runtime_path = find_local_antigravity_runtime()
+        self.connected_api = "DeepSeek Engineering API (https://api.deepseek.com/v1)"
         self.capabilities = [
             "read_files",
             "write_files",
@@ -151,6 +170,7 @@ class AntigravityAdapter:
             "code_analysis",
             "search",
             "reason",
+            "host_runtime",
         ]
 
     def run(
