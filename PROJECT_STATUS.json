@@ -1,14 +1,15 @@
 {
   "project": "NEXUS CORE 2.1",
   "version": "2.1.0-CONTROL-CENTER-PROD",
-  "phase": "NEXUS CONTROL CENTER 2.1 (Unified Platform + Modern Dark Tech UI + Visual Agent Wizard + Multi-Model Hub + Transparent Token & Cost Center)",
-  "tests": "173 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 199/199 passed.",
+  "phase": "NEXUS CONTROL CENTER 2.1 (Full Control Center + Arena Benchmark Lab + Data-Driven Routing + Transparent Token & Cost Center)",
+  "tests": "176 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 202/202 passed.",
   "modules": {
     "control_center": {
       "visual_ui": "Modern dark tech obsidian theme with light mode toggle, responsive enterprise sidebar navigation, zero external CDN latency",
       "agent_center": "5-step wizard creation, builtin enterprise role templates, strict/supervised/autonomous permissions, live sandbox test runner",
       "model_hub": "7 provider presets (DeepSeek, Qwen, OpenAI, Gemini, Claude, Ollama, Custom), secret masking (sk-****), connection ping test, 3-mode smart router",
-      "usage_center": "Strict provider_reported vs estimated segregation, 5-dimensional breakdown, task retry overhead audit, hierarchical budget guard"
+      "usage_center": "Strict provider_reported vs estimated segregation, 5-dimensional breakdown, task retry overhead audit, hierarchical budget guard",
+      "benchmark_arena": "Multi-model arena showdown with AST/syntax independent evaluation, side-by-side battle cards, winner crowns, empirical win-rate ladder"
     },
     "killer_features_dsh": {
       "observe_mode": "Progressive Trust (OBSERVE shadow recording -> Human review -> AUTO mode elevation)",

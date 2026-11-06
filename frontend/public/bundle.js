@@ -1394,15 +1394,91 @@ const TaskWorkspace = () => {
 
 // ===== components/BenchmarkCenter.tsx =====
 
-const BenchmarkCenter = () => {
-  const [goal, setGoal] = useState('计算 2+2 的结果');
-  const [loading, setLoading] = useState(false);
-  const [report, setReport] = useState(null);
-  const [error, setError] = useState(null);
-  const handleRunCompare = async () => {
-    if (!goal.trim()) return;
-    setLoading(true);
-    setError(null);
+const BenchmarkCenter = ({
+  isDark = true
+}) => {
+  const [activeTab, setActiveTab] = useState('arena');
+
+  // Arena State
+  const [arenaGoal, setArenaGoal] = useState('编写一个 Python 函数，使用双指针高效反转字符串中的元音字母并写出测试用例');
+  const [selectedModels, setSelectedModels] = useState(['deepseek-chat', 'deepseek-reasoner', 'qwen-plus']);
+  const [arenaLoading, setArenaLoading] = useState(false);
+  const [arenaReport, setArenaReport] = useState(null);
+  const [arenaRankings, setArenaRankings] = useState([]);
+
+  // A/B Comparator State
+  const [abGoal, setAbGoal] = useState('计算 2+2 的结果');
+  const [abLoading, setAbLoading] = useState(false);
+  const [abReport, setAbReport] = useState(null);
+  const fetchRankings = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/benchmark/arena/rankings`);
+      if (res.ok) setArenaRankings(await res.json());
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/benchmark/arena/history?limit=1`);
+      if (res.ok) {
+        const list = await res.json();
+        if (list && list.length > 0 && !arenaReport) {
+          setArenaReport(list[0]);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
+    fetchRankings();
+    fetchHistory();
+  }, []);
+  const handleToggleModel = m => {
+    if (selectedModels.includes(m)) {
+      if (selectedModels.length > 2) {
+        setSelectedModels(selectedModels.filter(x => x !== m));
+      } else {
+        alert('至少保留 2 个模型进行竞技对比！');
+      }
+    } else {
+      if (selectedModels.length < 5) {
+        setSelectedModels([...selectedModels, m]);
+      } else {
+        alert('最多支持 5 个模型同台竞技');
+      }
+    }
+  };
+  const handleRunArena = async () => {
+    if (!arenaGoal.trim()) return;
+    setArenaLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/benchmark/arena`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          goal: arenaGoal.trim(),
+          candidate_models: selectedModels,
+          task_type: 'coding'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setArenaReport(data);
+        fetchRankings();
+      }
+    } catch (err) {
+      alert(`测试异常: ${err.message}`);
+    } finally {
+      setArenaLoading(false);
+    }
+  };
+  const handleRunAB = async () => {
+    if (!abGoal.trim()) return;
+    setAbLoading(true);
     try {
       const res = await fetch(`${API_BASE}/benchmark/compare`, {
         method: 'POST',
@@ -1410,36 +1486,495 @@ const BenchmarkCenter = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          goal: goal.trim(),
+          goal: abGoal.trim(),
           task_type: 'general'
         })
       });
-      if (!res.ok) throw new Error(`对照测试失败 HTTP ${res.status}`);
-      setReport(await res.json());
-    } catch (e) {
-      setError(e.message);
+      if (res.ok) setAbReport(await res.json());
+    } catch (err) {
+      alert(`对照失败: ${err.message}`);
     } finally {
-      setLoading(false);
+      setAbLoading(false);
     }
   };
+  const cardBg = isDark ? '#161b22' : '#ffffff';
+  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const textMain = isDark ? '#f0f6fc' : '#1d1d1f';
+  const textSub = isDark ? '#8b949e' : '#86868b';
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      background: '#fff',
-      borderRadius: '18px',
-      padding: '24px',
-      border: '1px solid rgba(0,0,0,0.06)'
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
     }
-  }, /*#__PURE__*/React.createElement("h2", {
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: '18px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '14px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      margin: '0 0 4px 0',
+      fontSize: '20px',
+      fontWeight: '700',
+      color: textMain
+    }
+  }, "\uD83D\uDD2C \u6027\u80FD\u5BF9\u6BD4\u5B9E\u9A8C\u5BA4 (Benchmark Arena Lab)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '13px',
+      color: textSub
+    }
+  }, "\u540C\u4EFB\u52A1\u591A\u6A21\u578B\u7ADE\u901F\u5927\u6BD4\u6B66 \xB7 \u901F\u5EA6/\u8D28\u91CF/\u6210\u672C\u591A\u7EF4\u6253\u5206 \xB7 \u6570\u636E\u9A71\u52A8\u667A\u80FD\u6A21\u578B\u8DEF\u7531")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '8px',
+      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
+      padding: '4px',
+      borderRadius: '10px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setActiveTab('arena'),
+    style: {
+      padding: '6px 14px',
+      borderRadius: '8px',
+      border: 'none',
+      background: activeTab === 'arena' ? '#58a6ff' : 'transparent',
+      color: activeTab === 'arena' ? '#fff' : textSub,
+      fontSize: '12px',
       fontWeight: '600',
-      color: '#1d1d1f',
+      cursor: 'pointer'
+    }
+  }, "\u2694\uFE0F \u591A\u6A21\u578B\u7ADE\u901F\u5927\u6BD4\u6B66"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setActiveTab('ab_comparator'),
+    style: {
+      padding: '6px 14px',
+      borderRadius: '8px',
+      border: 'none',
+      background: activeTab === 'ab_comparator' ? '#58a6ff' : 'transparent',
+      color: activeTab === 'ab_comparator' ? '#fff' : textSub,
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: 'pointer'
+    }
+  }, "\u2696\uFE0F \u5355/\u591A Agent A/B \u5BF9\u7167"))), activeTab === 'arena' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      padding: '20px'
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 10px 0',
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83C\uDFAF \u8F93\u5165\u6D4B\u8BD5\u4EFB\u52A1\u76EE\u6807 (Arena Prompt)"), /*#__PURE__*/React.createElement("textarea", {
+    rows: 2,
+    value: arenaGoal,
+    onChange: e => setArenaGoal(e.target.value),
+    style: {
+      width: '100%',
+      padding: '10px 14px',
+      borderRadius: '10px',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain,
+      fontSize: '13px',
+      marginBottom: '14px'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub,
+      marginBottom: '8px'
+    }
+  }, "\u9009\u62E9\u540C\u53F0\u7ADE\u6280\u6A21\u578B (2~5 \u4E2A):"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '8px',
+      flexWrap: 'wrap'
+    }
+  }, ['deepseek-chat', 'deepseek-reasoner', 'qwen-plus', 'qwen-max', 'gpt-4o', 'claude-3-5-sonnet', 'gemini-2.0-flash'].map(m => {
+    const isSel = selectedModels.includes(m);
+    return /*#__PURE__*/React.createElement("button", {
+      key: m,
+      onClick: () => handleToggleModel(m),
+      style: {
+        padding: '6px 12px',
+        borderRadius: '8px',
+        border: `1px solid ${isSel ? '#58a6ff' : borderCol}`,
+        background: isSel ? 'rgba(56, 139, 253, 0.15)' : isDark ? '#0d1117' : '#f9fafb',
+        color: isSel ? '#58a6ff' : textSub,
+        fontSize: '12px',
+        fontWeight: isSel ? '600' : '400',
+        cursor: 'pointer'
+      }
+    }, isSel ? '✓ ' : '+ ', m);
+  }))), /*#__PURE__*/React.createElement("button", {
+    disabled: arenaLoading,
+    onClick: handleRunArena,
+    style: {
+      padding: '10px 24px',
+      borderRadius: '10px',
+      border: 'none',
+      background: '#238636',
+      color: '#fff',
+      fontSize: '13px',
+      fontWeight: '600',
+      cursor: arenaLoading ? 'wait' : 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px'
+    }
+  }, arenaLoading ? '⚡ 正在并发执行模型推理与独立评估...' : '⚡ 启动多模型竞技大比武')), arenaReport && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: isDark ? 'linear-gradient(135deg, rgba(210, 153, 34, 0.15) 0%, rgba(56, 139, 253, 0.1) 100%)' : 'linear-gradient(135deg, #fffbeb 0%, #eff6ff 100%)',
+      border: '1px solid rgba(210, 153, 34, 0.3)',
+      borderRadius: '14px',
+      padding: '16px 20px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '12px'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginBottom: '4px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '18px'
+    }
+  }, "\uD83D\uDC51"), /*#__PURE__*/React.createElement("strong", {
+    style: {
+      fontSize: '14px',
+      color: '#d29922'
+    }
+  }, "\u7EFC\u5408\u6027\u4EF7\u6BD4\u6842\u51A0\uFF1A", arenaReport.winner_overall)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '12px',
+      color: textSub
+    }
+  }, arenaReport.recommendation)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '8px',
+      flexWrap: 'wrap'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '4px 8px',
+      borderRadius: '6px',
+      background: 'rgba(63, 185, 80, 0.2)',
+      color: '#3fb950',
+      fontWeight: '600'
+    }
+  }, "\uD83D\uDCB0 \u6700\u7701\u6210\u672C: ", arenaReport.winner_cost), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '4px 8px',
+      borderRadius: '6px',
+      background: 'rgba(56, 139, 253, 0.2)',
+      color: '#58a6ff',
+      fontWeight: '600'
+    }
+  }, "\u26A1 \u54CD\u5E94\u6700\u5FEB: ", arenaReport.winner_speed), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      padding: '4px 8px',
+      borderRadius: '6px',
+      background: 'rgba(188, 140, 255, 0.2)',
+      color: '#bc8cff',
+      fontWeight: '600'
+    }
+  }, "\uD83C\uDFAF \u8D28\u91CF\u6700\u9AD8: ", arenaReport.winner_quality))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'grid',
+      gridTemplateColumns: `repeat(auto-fit, minmax(280px, 1fr))`,
+      gap: '16px'
+    }
+  }, arenaReport.results.map(res => {
+    const isOverallWinner = res.model_id === arenaReport.winner_overall;
+    return /*#__PURE__*/React.createElement("div", {
+      key: res.model_id,
+      style: {
+        background: cardBg,
+        border: `1px solid ${isOverallWinner ? '#d29922' : borderCol}`,
+        borderRadius: '14px',
+        padding: '18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        position: 'relative',
+        boxShadow: isOverallWinner ? '0 0 16px rgba(210, 153, 34, 0.15)' : 'none'
+      }
+    }, isOverallWinner && /*#__PURE__*/React.createElement("span", {
+      style: {
+        position: 'absolute',
+        top: '-10px',
+        right: '14px',
+        background: '#d29922',
+        color: '#fff',
+        fontSize: '10px',
+        fontWeight: '700',
+        padding: '2px 8px',
+        borderRadius: '10px'
+      }
+    }, "\u2605 WINNER"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start'
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '14px',
+        fontWeight: '700',
+        color: textMain
+      }
+    }, res.model_id), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '11px',
+        color: textSub
+      }
+    }, res.provider_id.toUpperCase())), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: '11px',
+        padding: '2px 6px',
+        borderRadius: '6px',
+        background: res.verification_passed ? 'rgba(63, 185, 80, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+        color: res.verification_passed ? '#3fb950' : '#ef4444',
+        fontWeight: '600'
+      }
+    }, res.verification_passed ? '✓ 核验通过' : '✕ 核验失败')), /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '8px',
+        background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+        padding: '10px',
+        borderRadius: '8px',
+        border: `1px solid ${borderCol}`
+      }
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '10px',
+        color: textSub
+      }
+    }, "\u603B Token"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '13px',
+        fontWeight: '700',
+        color: textMain
+      }
+    }, res.total_tokens)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '10px',
+        color: textSub
+      }
+    }, "\u8D39\u7528 (USD)"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '13px',
+        fontWeight: '700',
+        color: '#3fb950'
+      }
+    }, "$", res.cost_usd.toFixed(5))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '10px',
+        color: textSub
+      }
+    }, "\u54CD\u5E94\u65F6\u95F4"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '13px',
+        fontWeight: '700',
+        color: textMain
+      }
+    }, res.elapsed_seconds, "s")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '10px',
+        color: textSub
+      }
+    }, "\u6027\u4EF7\u6BD4\u6307\u6570"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '13px',
+        fontWeight: '700',
+        color: '#58a6ff'
+      }
+    }, res.cost_performance_index.toFixed(0)))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: '11px',
+        color: textSub,
+        lineHeight: 1.4
+      }
+    }, /*#__PURE__*/React.createElement("strong", null, "\u6838\u9A8C\u7ED3\u679C:"), " ", res.evaluator_notes), /*#__PURE__*/React.createElement("div", {
+      style: {
+        background: isDark ? '#0d1117' : '#f6f8fa',
+        border: `1px solid ${borderCol}`,
+        borderRadius: '6px',
+        padding: '8px',
+        fontSize: '11px',
+        fontFamily: 'monospace',
+        maxHeight: '100px',
+        overflowY: 'auto',
+        color: textMain
+      }
+    }, /*#__PURE__*/React.createElement("pre", {
+      style: {
+        margin: 0,
+        whiteSpace: 'pre-wrap'
+      }
+    }, res.output_preview)));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      border: `1px solid ${borderCol}`,
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '16px 20px',
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0,
+      fontSize: '15px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, "\uD83D\uDCCA \u5927\u6A21\u578B\u771F\u5B9E\u6570\u636E\u80DC\u7387\u5929\u68AF (Empirical Data-Driven Leaderboard)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: 'auto'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '13px',
+      textAlign: 'left'
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+      color: textSub,
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px'
+    }
+  }, "\u6A21\u578B ID"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u5BF9\u51B3\u573A\u6B21"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u7EFC\u5408\u80DC\u7387"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u5E73\u5747\u5355\u6B21\u8D39\u7528"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 14px'
+    }
+  }, "\u5E73\u5747\u5EF6\u8FDF"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: '12px 18px',
+      textAlign: 'right'
+    }
+  }, "\u5E73\u5747\u8D28\u91CF\u5206"))), /*#__PURE__*/React.createElement("tbody", null, arenaRankings.map((r, i) => /*#__PURE__*/React.createElement("tr", {
+    key: r.model_id,
+    style: {
+      borderBottom: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, r.model_id), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textSub
+    }
+  }, r.matches, " \u573A"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '12px',
+      padding: '2px 8px',
+      borderRadius: '6px',
+      background: 'rgba(56, 139, 253, 0.15)',
+      color: '#58a6ff',
+      fontWeight: '700'
+    }
+  }, r.win_rate_pct, "%")), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: '#3fb950'
+    }
+  }, "$", r.avg_cost_usd.toFixed(5)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 14px',
+      color: textSub
+    }
+  }, r.avg_latency_ms, "ms"), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: '14px 18px',
+      textAlign: 'right',
+      fontWeight: '600',
+      color: textMain
+    }
+  }, (r.avg_quality_score * 100).toFixed(0), "\u5206")))))))), activeTab === 'ab_comparator' && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cardBg,
+      borderRadius: '16px',
+      padding: '24px',
+      border: `1px solid ${borderCol}`
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: textMain,
       marginBottom: '8px'
     }
   }, "\u2696\uFE0F \u5355 Agent vs \u591A Agent A/B \u5BF9\u7167\u57FA\u51C6\u4E2D\u5FC3 (\xA77 \u6536\u76CA\u9A8C\u8BC1)"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: '13px',
-      color: '#86868b',
+      color: textSub,
       marginBottom: '20px'
     }
   }, "\u4E25\u683C\u8D2F\u5F7B\u201C\u4E0D\u80FD\u4E3A\u4E86\u591A Agent \u800C\u591A Agent\u201D\u539F\u5219\uFF1A\u540C\u8F93\u5165\u7269\u7406\u5BF9\u7167\u5355 Agent \u4E0E\u591A Agent \u534F\u4F5C\uFF0C\u8BA1\u7B97 Token \u653E\u5927\u500D\u6570\u4E0E\u65F6\u95F4\u5DEE\u5F02\u3002"), /*#__PURE__*/React.createElement("div", {
@@ -1451,7 +1986,7 @@ const BenchmarkCenter = () => {
       display: 'block',
       fontSize: '12px',
       fontWeight: '500',
-      color: '#86868b',
+      color: textSub,
       marginBottom: '6px'
     }
   }, "\u5B9E\u9A8C\u6D4B\u8BD5\u76EE\u6807"), /*#__PURE__*/React.createElement("div", {
@@ -1461,169 +1996,105 @@ const BenchmarkCenter = () => {
     }
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: goal,
-    onChange: e => setGoal(e.target.value),
+    value: abGoal,
+    onChange: e => setAbGoal(e.target.value),
     placeholder: "\u4F8B\u5982\uFF1A\u8BA1\u7B97 2+2 \u7684\u7ED3\u679C \u6216 \u7F16\u5199\u5FEB\u901F\u6392\u5E8F\u7B97\u6CD5\u5E76\u6D4B\u8BD5",
     style: {
       flex: 1,
       padding: '10px 14px',
       borderRadius: '10px',
-      border: '1px solid #d2d2d7',
+      border: `1px solid ${borderCol}`,
+      background: isDark ? '#0d1117' : '#fff',
+      color: textMain,
       fontSize: '13px'
     }
   }), /*#__PURE__*/React.createElement("button", {
-    onClick: handleRunCompare,
-    disabled: loading,
+    onClick: handleRunAB,
+    disabled: abLoading,
     style: {
       padding: '10px 20px',
       borderRadius: '10px',
       border: 'none',
-      background: '#0071e3',
+      background: '#58a6ff',
       color: '#fff',
       fontSize: '13px',
       fontWeight: '600',
       cursor: 'pointer'
     }
-  }, loading ? '🔬 正在并发对照运行...' : '🔬 启动双模式对照实验'))), error && /*#__PURE__*/React.createElement("div", {
+  }, abLoading ? '🔬 正在并发对照运行...' : '🔬 启动双模式对照实验'))), abReport && /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '12px',
-      background: '#ffebe9',
-      color: '#cf222e',
-      borderRadius: '8px',
-      fontSize: '13px',
-      marginBottom: '16px'
-    }
-  }, error), report && /*#__PURE__*/React.createElement("div", {
-    style: {
-      border: '1px solid #e5e5ea',
-      borderRadius: '14px',
-      padding: '20px',
-      background: '#fafafc',
-      marginTop: '20px'
+      marginTop: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px'
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '12px'
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '16px'
     }
-  }, /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: '15px',
-      fontWeight: '600',
-      color: report.recommendation === 'use_single_agent' ? '#0071e3' : '#34c759'
+      background: isDark ? '#0d1117' : '#f6f8fa',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '12px',
+      padding: '16px'
     }
-  }, "\uD83D\uDCCA \u667A\u80FD\u4E3B\u63A7\u5224\u5B9A: ", report.recommendation === 'use_single_agent' ? '推荐单 Agent 直达 (避免冗余开销)' : '推荐多 Agent 协作 (解耦与验证价值成立)'), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '14px',
+      fontWeight: '600',
+      color: textMain,
+      marginBottom: '8px'
+    }
+  }, "\u26A1 \u5355 Agent \u76F4\u8FBE\u6A21\u5F0F"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '12px',
-      color: '#86868b'
+      color: textSub
     }
-  }, "\u5206\u7C7B\u590D\u6742\u5EA6: ", /*#__PURE__*/React.createElement("strong", null, report.complexity))), /*#__PURE__*/React.createElement("div", {
+  }, "Token: ", abReport.single_agent.total_tokens, " | \u8017\u65F6: ", abReport.single_agent.elapsed_seconds.toFixed(2), "s"), /*#__PURE__*/React.createElement("pre", {
     style: {
-      fontSize: '13px',
-      color: '#1d1d1f',
-      background: '#fff',
-      padding: '12px',
-      borderRadius: '8px',
-      border: '1px solid #e5e5ea',
-      marginBottom: '16px'
+      margin: '8px 0 0 0',
+      fontSize: '11px',
+      color: textMain,
+      whiteSpace: 'pre-wrap'
     }
-  }, report.reason), /*#__PURE__*/React.createElement("table", {
+  }, abReport.single_agent.result_excerpt)), /*#__PURE__*/React.createElement("div", {
     style: {
-      width: '100%',
-      fontSize: '13px',
-      borderCollapse: 'collapse',
-      background: '#fff',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      border: '1px solid #e5e5ea'
+      background: isDark ? '#0d1117' : '#f6f8fa',
+      border: `1px solid ${borderCol}`,
+      borderRadius: '12px',
+      padding: '16px'
     }
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
-      background: '#f5f5f7',
-      borderBottom: '1px solid #e5e5ea',
-      textAlign: 'left',
-      color: '#86868b'
+      fontSize: '14px',
+      fontWeight: '600',
+      color: textMain,
+      marginBottom: '8px'
     }
-  }, /*#__PURE__*/React.createElement("th", {
+  }, "\uD83E\uDD16 \u591A Agent \u534F\u540C\u6A21\u5F0F"), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '10px 14px'
+      fontSize: '12px',
+      color: textSub
     }
-  }, "\u5BF9\u6BD4\u7EF4\u5EA6"), /*#__PURE__*/React.createElement("th", {
+  }, "Token: ", abReport.multi_agent.total_tokens, " | \u8017\u65F6: ", abReport.multi_agent.elapsed_seconds.toFixed(2), "s"), /*#__PURE__*/React.createElement("pre", {
     style: {
-      padding: '10px 14px'
+      margin: '8px 0 0 0',
+      fontSize: '11px',
+      color: textMain,
+      whiteSpace: 'pre-wrap'
     }
-  }, "\u5355 Agent \u6A21\u5F0F (Mode A)"), /*#__PURE__*/React.createElement("th", {
+  }, abReport.multi_agent.result_excerpt))), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: '10px 14px'
+      padding: '12px 16px',
+      borderRadius: '10px',
+      background: 'rgba(56, 139, 253, 0.1)',
+      color: '#58a6ff',
+      fontSize: '13px'
     }
-  }, "\u591A Agent \u7F16\u6392\u6A21\u5F0F (Mode B)"), /*#__PURE__*/React.createElement("th", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, "\u5BF9\u6BD4\u5DEE\u5F02 / \u653E\u5927\u500D\u7387"))), /*#__PURE__*/React.createElement("tbody", null, /*#__PURE__*/React.createElement("tr", {
-    style: {
-      borderBottom: '1px solid #e5e5ea'
-    }
-  }, /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px',
-      fontWeight: '500'
-    }
-  }, "\u6D88\u8017\u603B Token"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, report.single_agent.total_tokens), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, report.multi_agent.total_tokens), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px',
-      color: '#ff9500',
-      fontWeight: '600'
-    }
-  }, report.token_multiplier, "x \u6D88\u8017")), /*#__PURE__*/React.createElement("tr", {
-    style: {
-      borderBottom: '1px solid #e5e5ea'
-    }
-  }, /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px',
-      fontWeight: '500'
-    }
-  }, "\u6267\u884C\u8017\u65F6"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, report.single_agent.elapsed_seconds, " s"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, report.multi_agent.elapsed_seconds, " s"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, "\u0394 ", report.time_delta_seconds, " s")), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px',
-      fontWeight: '500'
-    }
-  }, "\u6267\u884C\u6B65\u9AA4\u4E0E\u72B6\u6001"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, "1 \u6B65 (", report.single_agent.status, ")"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, report.multi_agent.steps_count, " \u6B65 (", report.multi_agent.status, ")"), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: '10px 14px'
-    }
-  }, report.multi_agent.status === 'success' ? '✅ 全部成功' : '⚠️ 存在失败'))))));
+  }, /*#__PURE__*/React.createElement("strong", null, "\u51B3\u7B56\u5EFA\u8BAE\uFF1A"), " ", abReport.recommendation === 'use_single_agent' ? '推荐单 Agent 直达（节省 Token）' : '推荐多 Agent 协同（任务需分工）', " \xB7 ", abReport.reason))));
 };
 
 // ===== components/EvolutionPanel.tsx =====

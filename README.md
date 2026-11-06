@@ -1,12 +1,13 @@
 # NEXUS CORE 2.1 — 企业级多智能体主控与可视化管理控制台平台
 
-> **当前阶段**：`NEXUS CONTROL CENTER 2.1 (深色科技工作区 + 5步可视化 Agent 向导 + 7大模型接入中心 + 真实 Token 成本穿透审计)` | **状态**：`PROD READY`  
-> **自动化测试矩阵**：**199 项测试全部通过（173 Pytest + 26 B0 v7 架构契约测试），0 失败**  
+> **当前阶段**：`NEXUS CONTROL CENTER 2.1 (深色科技工作区 + 5步可视化 Agent 向导 + 7大模型接入中心 + 真实 Token 成本穿透审计 + 多模型竞速大比武实验室)` | **状态**：`PROD READY`  
+> **自动化测试矩阵**：**202 项测试全部通过（176 Pytest + 26 B0 v7 架构契约测试），0 失败**  
 > **核心突破**：将 NEXUS 从需要编写 Python 代码/手动配置的底层引擎，全面升级为企业级一站式智能体操作系统：
-> 1. **深色极客科技控制台 (Dark Obsidian UI)**：支持深色/浅色一键切换、响应式侧边栏、状态胶囊、离线零外部 CDN 毫秒级打开；
+> 1. **深色极客科技控制台 (Dark Obsidian UI)**：支持深色/浅色一键切换、响应式侧边栏、状态胶囊、离线零外部 CDN 毫秒级秒开；
 > 2. **Agent 可视化管理中心 (`app/agents/`)**：5步向导式创建、内置企业角色模板、权限分级（Strict/Supervised/Autonomous）、一键沙箱测试运行；
 > 3. **多模型接入中心 (`app/model_hub/`)**：预设 7 大服务商（DeepSeek、通义千问、OpenAI、Gemini、Claude、Ollama 本地、自定义中转）、API Key 脱敏防护、毫秒级测速与 3 模智能路由；
-> 4. **Token 与成本监控中心 (`app/usage/`)**：严格区分真实官方用量与估算值、5 维穿透图表、任务重试成本溢价审计与 B0/B1 原生预算熔断。
+> 4. **Token 与成本监控中心 (`app/usage/`)**：严格区分真实官方用量与估算值、5 维穿透图表、任务重试成本溢价审计与 B0/B1 原生预算熔断；
+> 5. **性能对比实验室 (`app/benchmark/arena.py`)**：同任务多模型同台竞速比武，四维桂冠决断（性价比/成本/响应速度/代码核验质量），真实数据驱动智能路由。
 
 ---
 
@@ -112,7 +113,7 @@ python scripts/nexus_cli.py memory search-hybrid "高并发缓存淘汰锁机制
 
 ### 4. 自动化测试验证
 ```bash
-# 运行 173 项 Pytest 全量测试 (含 Control Center 2.1 控制中心、DEV 自主研发、OPS 自主运维、DSH 杀手特性等)
+# 运行 176 项 Pytest 全量测试 (含 Arena 竞速大比武、Control Center 控制中心、DEV 自主研发、OPS 自主运维等)
 python -m pytest tests/
 
 # 运行 26 项 B0 v7 架构契约独立验证套件 (100% 严苛决断表)

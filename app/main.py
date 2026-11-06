@@ -85,6 +85,7 @@ from app.api.agents import router as agents_router
 from app.api.models import router as models_router
 from app.api.usage import router as usage_router
 from app.api.dashboard import router as dashboard_router
+from app.api.benchmark import router as benchmark_router
 
 app = FastAPI(title="NEXUS CORE 2.1", version="2.1.0", lifespan=lifespan)
 
@@ -100,6 +101,7 @@ app.include_router(agents_router)
 app.include_router(models_router)
 app.include_router(usage_router)
 app.include_router(dashboard_router)
+app.include_router(benchmark_router)
 
 # ===== Auth =====
 
