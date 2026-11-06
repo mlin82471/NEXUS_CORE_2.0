@@ -3,6 +3,7 @@ NEXUS CORE 2.0 API — FastAPI app.
 Auth fail-closed, risk server-side, approval separate, safe errors.
 Deeply integrated with B0 v7 Architecture Contracts and B1 Execution Engine.
 """
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Header
@@ -58,7 +59,7 @@ async def lifespan(ap):
 
     # Startup Crash Recovery: Scan and recover any interrupted tasks
     try:
-        db_path = settings.database_url.replace("sqlite:///", "")
+        db_path = settings.db_url.replace("sqlite:///", "")
         engine_b1 = ExecutionEngine(
             SQLitePersistence(db_path),
             SQLiteBudgetTracker(db_path),

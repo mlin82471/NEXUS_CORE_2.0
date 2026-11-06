@@ -97,6 +97,10 @@ class Settings:
         return f"sqlite:///{data / 'nexus_2.db'}"
 
     @property
+    def database_url(self) -> str:
+        return self.db_url
+
+    @property
     def auth_required(self) -> bool:
         """True unless explicit dev mode bypass."""
         return not self.dev_mode
