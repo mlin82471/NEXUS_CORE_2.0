@@ -13,6 +13,7 @@ from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
 from app.evolution.analyzer import analyze_and_propose_evolutions
 from app.evolution.sandbox import verify_proposal_in_sandbox
+from app.evolution.watchdog import semantic_watchdog
 from app.models import EvolutionProposal
 
 logger = logging.getLogger("nexus.evolution.sweeper")
@@ -104,6 +105,17 @@ class AutonomousEvolutionSweeper:
             elif p.status == "test_failed":
                 failed_count += 1
 
+        # 3. Semantic Livelock Watchdog diagnosis
+        livelocks_found = 0
+        for w_id in list(semantic_watchdog._heartbeats.keys()):
+            diagnosis = semantic_watchdog.diagnose_worker(w_id)
+            if diagnosis.is_livelocked:
+                livelocks_found += 1
+                logger.warning(
+                    f"Sweeper: Worker '{w_id}' flagged by Semantic Watchdog! "
+                    f"Reason: {diagnosis.diagnosis_reason}, Intervention: {diagnosis.recommended_intervention}"
+                )
+
         duration = round(time.time() - start_time, 3)
         summary = {
             "sweep_id": self.total_sweeps,
@@ -112,6 +124,7 @@ class AutonomousEvolutionSweeper:
             "new_proposals_found": len(proposals),
             "verified_pending_approval": verified_count,
             "sandbox_failed": failed_count,
+            "livelocks_intercepted": livelocks_found,
         }
         self.last_sweep_result = summary
         logger.info(f"Sweep #{self.total_sweeps} finished in {duration}s: {summary}")

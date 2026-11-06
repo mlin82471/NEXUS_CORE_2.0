@@ -1,9 +1,14 @@
 {
   "project": "NEXUS CORE 2.1",
-  "version": "2.1.0-DEV-ALPHA",
-  "phase": "NEXUS 2.1 (Phase 1 Platform Infrastructure + Phase 2 NEXUS DEV Autonomous Engineering System)",
-  "tests": "150 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 176/176 passed.",
+  "version": "2.1.0-PROD-CANDIDATE",
+  "phase": "NEXUS 2.1 (Platform Infrastructure + NEXUS DEV + 3 Killer DSH Features: Observe Mode, Thread Hub, Semantic Watchdog)",
+  "tests": "153 pytest passed (100%), 26 b0_v7 contract tests passed (100%), 0 failed. Total: 179/179 passed.",
   "modules": {
+    "killer_features_dsh": {
+      "observe_mode": "Progressive Trust (OBSERVE shadow recording -> Human review -> AUTO mode elevation)",
+      "thread_hub": "Decoupled Ticket/Assignment with dynamic mid-flight steering without DAG restart",
+      "semantic_watchdog": "Alive-but-Stuck livelock detection (semantic repetition & token burn velocity) with negative feedback injection"
+    },
     "platform": "Workspace isolation (git worktree), Evidence Engine (SHA-256 fingerprint), Policy Engine (L0-L3), Approval Gate, CAS Runtime Config",
     "dev": "Autonomous Software Engineering (Requirements, 4-Level Independent Code Review, Test Runner, Traceback Repair, Release Packaging)",
     "planner": "Qwen / Gemini via OpenAI-compatible API + rule fallback",

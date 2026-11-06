@@ -13,6 +13,8 @@ from app.evolution.manager import (
 )
 
 from app.evolution.sweeper import AutonomousEvolutionSweeper, sweeper
+from app.evolution.observer import ObserveModeManager, ShadowActionIntent, TrustMode, observe_manager
+from app.evolution.watchdog import LivelockDiagnosis, SemanticWatchdog, semantic_watchdog
 
 __all__ = [
     "analyze_and_propose_evolutions",
@@ -23,5 +25,12 @@ __all__ = [
     "EvolutionApprovalError",
     "EvolutionRollbackError",
     "AutonomousEvolutionSweeper",
-    "sweeper"
+    "sweeper",
+    "ObserveModeManager",
+    "observe_manager",
+    "TrustMode",
+    "ShadowActionIntent",
+    "SemanticWatchdog",
+    "semantic_watchdog",
+    "LivelockDiagnosis",
 ]
