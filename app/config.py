@@ -69,10 +69,10 @@ class Settings:
         self.api_token: str = os.getenv("NEXUS_API_TOKEN", "")
         self.approval_token: str = os.getenv("NEXUS_APPROVAL_TOKEN", "")
 
-        # ---- Adapter gates ----
-        self.enable_dsh_adapter: bool = _require_bool("ENABLE_DSH_ADAPTER", False)
-        self.enable_hermes_adapter: bool = _require_bool("ENABLE_HERMES_ADAPTER", False)
-        self.enable_antigravity_adapter: bool = _require_bool("ENABLE_ANTIGRAVITY_ADAPTER", False)
+        # ---- Adapter gates (Default True for real host execution) ----
+        self.enable_dsh_adapter: bool = _require_bool("ENABLE_DSH_ADAPTER", True)
+        self.enable_hermes_adapter: bool = _require_bool("ENABLE_HERMES_ADAPTER", True)
+        self.enable_antigravity_adapter: bool = _require_bool("ENABLE_ANTIGRAVITY_ADAPTER", True)
 
         # ---- Budget limits ----
         self.default_max_steps: int = _require_int("DEFAULT_MAX_STEPS", 5, 1, 50)

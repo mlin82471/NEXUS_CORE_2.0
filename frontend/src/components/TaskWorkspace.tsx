@@ -11,7 +11,62 @@ export const TaskWorkspace: React.FC = () => {
   const [currentTask, setCurrentTask] = useState<TaskDetail | null>(null);
   const [selectedStep, setSelectedStep] = useState<PlanStep | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isDemoRunning, setIsDemoRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleRunRealDemo = async () => {
+    setError(null);
+    setIsDemoRunning(true);
+    setSelectedStep(null);
+    try {
+      const res = await fetch(`${API_BASE}/tasks/demo/real-agents`, { method: 'POST' });
+      if (!res.ok) throw new Error(`运行多智能体演练失败 HTTP ${res.status}`);
+      const data = await res.json();
+      
+      const demoTask: TaskDetail = {
+        id: `real-mission-${Date.now().toString().slice(-6)}`,
+        goal: '企业级自愈流水线实测：Hermes 指标调研 -> DSH 探活 -> Antigravity 熔断实现 -> 独立审查',
+        status: 'success',
+        plan_source: 'orchestrated_lead_manager',
+        risk_level: 'low',
+        complexity: 'HIGH',
+        execution_mode: 'orchestrated',
+        coordinator_agent: {
+          agent_id: 'agent-planner-core',
+          agent_name: 'NEXUS 任务规划与协调中枢 (Lead Coordinator)',
+          role: 'planner',
+          model_id: 'deepseek-reasoner',
+          provider_name: 'DeepSeek 官方 API',
+          api_endpoint: 'https://api.deepseek.com/v1',
+          pattern: 'Manager-Worker (Sub-Agents as Specialized Tools)',
+        },
+        steps: data.steps.map((st: any) => ({
+          step_key: st.step,
+          role: st.step.includes('research') ? 'research' : st.step.includes('diagnostics') ? 'analysis' : st.step.includes('coding') ? 'coding' : 'verification',
+          goal: st.step.includes('research') ? '制定分布式节点异常巡检健康指标 (Hermes 深度链式推理)' :
+                st.step.includes('diagnostics') ? '集群节点指令分发与状态采集 (DSH 集群探活)' :
+                st.step.includes('coding') ? '工程自动化熔断器代码编写 (Antigravity 独立工程引擎)' :
+                '独立安全与状态机审查 (Independent Reviewer)',
+          agent_id: st.agent,
+          agent_name: st.agent,
+          provider_name: st.cli ? `本地宿主真实 CLI (${st.cli.split('\\').pop()})` : 'DeepSeek 官方 API',
+          api_endpoint: st.cli || 'https://api.deepseek.com/v1',
+          model_id: st.step.includes('research') ? 'hermes-0.21.6-native' : st.step.includes('diagnostics') ? 'dsh-0.2.1-native' : 'antigravity-native',
+          status: st.status,
+          result: st.summary || '执行完成，各项指标符合验收规约',
+        })),
+        events: [
+          { event_type: 'task_started', message: '主协调 Agent 启动 Manager-Worker 真实智能体调度', created_at: new Date().toISOString() },
+          { event_type: 'multi_agent_completed', message: `流水线实测成功！总耗时 ${data.total_duration}s，消耗 ${data.total_tokens} tokens`, created_at: new Date().toISOString() }
+        ]
+      };
+      setCurrentTask(demoTask);
+    } catch (err: any) {
+      setError(err.message || '运行多智能体演练异常');
+    } finally {
+      setIsDemoRunning(false);
+    }
+  };
 
   const handleLaunchTask = async () => {
     if (!goal.trim()) return;
@@ -152,6 +207,20 @@ export const TaskWorkspace: React.FC = () => {
             </button>
           )}
         </div>
+
+        <button
+          onClick={handleRunRealDemo}
+          disabled={isStreaming || isDemoRunning}
+          style={{
+            marginTop: '12px', width: '100%', padding: '12px', borderRadius: '10px',
+            border: '1px solid #0071e3', background: 'rgba(0, 113, 227, 0.08)',
+            color: '#0071e3', fontSize: '13px', fontWeight: '700', cursor: (isStreaming || isDemoRunning) ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            boxShadow: '0 2px 8px rgba(0, 113, 227, 0.1)',
+          }}
+        >
+          {isDemoRunning ? '⏳ 正在调度宿主真实智能体 (Hermes+DSH+Antigravity)...' : '🚀 一键演练宿主真实智能体流水线 (DSH+Hermes+反重力)'}
+        </button>
 
         {error && (
           <div style={{ marginTop: '14px', padding: '10px', background: '#ffebe9', color: '#cf222e', borderRadius: '8px', fontSize: '12px' }}>

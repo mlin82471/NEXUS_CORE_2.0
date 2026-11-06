@@ -261,7 +261,7 @@ export const App: React.FC = () => {
           {activeTab === 'tasks' && <TaskWorkspace />}
           {activeTab === 'dag' && <DAGStudio />}
           {activeTab === 'benchmark' && <BenchmarkCenter />}
-          {activeTab === 'evolution' && <EvolutionPanel />}
+          {activeTab === 'evolution' && <EvolutionPanel isDark={isDark} />}
           {activeTab === 'memory' && <MemoryInspector />}
         </main>
       </div>

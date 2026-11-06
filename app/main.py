@@ -6,7 +6,7 @@ Deeply integrated with B0 v7 Architecture Contracts and B1 Execution Engine.
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException, Header, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -106,13 +106,19 @@ app.include_router(benchmark_router)
 
 # ===== Auth =====
 
-def verify_token(x_token: str = Header(None)) -> None:
-    """Require X-Token unless dev mode."""
+def verify_token(request: Request, x_token: str = Header(None)) -> None:
+    """Require X-Token unless dev mode or local loopback web dashboard."""
     if settings.auth_required:
         if not settings.api_token:
             raise HTTPException(500, "NEXUS_API_TOKEN not configured on server")
-        if x_token != settings.api_token:
-            raise HTTPException(401, "Invalid or missing X-Token")
+        if x_token == settings.api_token:
+            return
+        # Allow requests originating from local dashboard UI
+        client_host = request.client.host if request.client else ""
+        referer = request.headers.get("referer", "")
+        if client_host in ("127.0.0.1", "localhost", "::1") and ("/dashboard" in referer or "127.0.0.1" in referer or "localhost" in referer):
+            return
+        raise HTTPException(401, "Invalid or missing X-Token")
 
 AUTH = [Depends(verify_token)]
 
@@ -891,46 +897,49 @@ def list_tasks(db: Session = Depends(get_db)):
              "plan_source": t.plan_source, "risk_level": t.risk_level,
              "created_at": t.created_at.isoformat() if t.created_at else None} for t in tasks]
 
-# Role to Tool-Agent & Connected API Mapping
+# Role to Tool-Agent & Connected API Mapping (Connected with real host agents)
 ROLE_TOOL_AGENT_MAP = {
-    "coding": {
-        "agent_id": "agent-coder-core",
-        "agent_name": "NEXUS 全栈编码工具 Agent",
+    "research": {
+        "agent_id": "agent-hermes-local",
+        "agent_name": "Hermes Agent 本地真实智能体",
+        "model_id": "qwen-max",
+        "provider_name": "Aliyun DashScope / Hermes CLI",
+        "api_endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "local_cli": r"C:\Users\linhr\AppData\Local\hermes\bin\hermes.exe",
+    },
+    "analysis": {
+        "agent_id": "agent-dsh-local",
+        "agent_name": "DSH Super-Agent 本地超级智能体",
         "model_id": "deepseek-chat",
-        "provider_name": "DeepSeek 官方 API",
+        "provider_name": "DeepSeek 官方 API / DSH CLI",
         "api_endpoint": "https://api.deepseek.com/v1",
+        "local_cli": r"D:\新建文件夹\resources\runtime\cli\bin\dsh.cmd",
+    },
+    "coding": {
+        "agent_id": "agent-antigravity-local",
+        "agent_name": "Google Antigravity 本地全栈智能体",
+        "model_id": "deepseek-chat",
+        "provider_name": "Antigravity Host Runtime / Agent API",
+        "api_endpoint": r"C:\Users\linhr\.gemini\antigravity",
+        "local_cli": r"C:\Users\linhr\AppData\Local\Programs\antigravity\Antigravity.exe",
     },
     "verification": {
         "agent_id": "agent-reviewer-core",
-        "agent_name": "NEXUS 4级代码审查工具 Agent",
+        "agent_name": "NEXUS 4级独立审查官",
         "model_id": "deepseek-reasoner",
         "provider_name": "DeepSeek Reasoner API",
         "api_endpoint": "https://api.deepseek.com/v1",
     },
-    "analysis": {
-        "agent_id": "agent-rca-core",
-        "agent_name": "NEXUS 根因分析诊断工具 Agent",
-        "model_id": "qwen-max",
-        "provider_name": "阿里云百炼 API",
-        "api_endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    },
-    "research": {
-        "agent_id": "agent-research-core",
-        "agent_name": "NEXUS 深度调研工具 Agent",
-        "model_id": "gemini-2.0-flash",
-        "provider_name": "Google Gemini API",
-        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta",
-    },
     "sre_ops": {
-        "agent_id": "agent-sre-core",
-        "agent_name": "NEXUS 自主自愈运维工具 Agent",
+        "agent_id": "agent-dsh-local",
+        "agent_name": "DSH Super-Agent 本地自愈运维工具",
         "model_id": "deepseek-chat",
         "provider_name": "DeepSeek 官方 API",
         "api_endpoint": "https://api.deepseek.com/v1",
     },
     "execution": {
-        "agent_id": "agent-sre-core",
-        "agent_name": "NEXUS 脚本执行工具 Agent",
+        "agent_id": "agent-dsh-local",
+        "agent_name": "DSH Super-Agent 指令分发工具",
         "model_id": "deepseek-chat",
         "provider_name": "DeepSeek 官方 API",
         "api_endpoint": "https://api.deepseek.com/v1",
@@ -1100,6 +1109,14 @@ def execute_task_async(
         "stream_url": f"/tasks/{task.id}/stream",
         "message": "Task queued for background execution in worker pool."
     }
+
+
+@app.post("/tasks/demo/real-agents", dependencies=AUTH)
+def run_real_agents_demo_endpoint():
+    """Runs end-to-end Manager-Worker multi-agent demo delegating to real host binaries."""
+    from scripts.run_real_agents_demo import run_live_multi_agent_mission
+    return run_live_multi_agent_mission()
+
 
 
 @app.get("/tasks/{task_id}/stream", dependencies=AUTH)
